@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-apple-apple-status-bar-style" content="black-translucent">
+    <meta name="apple-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050505">
     <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
     <title>RADIOLINKY</title>
@@ -122,7 +122,6 @@
         .copy-btn:active { color: var(--primary); }
         #viz-iframe { position: fixed; inset: 0; width: 100vw; height: 100vh; border: none; z-index: 5000; display: none; background: #000; }
         
-        /* AJOUTS POUR LE MENU PLIABLE */
         nav.collapsed { width: 100%; transform: translateX(-100%); border: none; }
         main.expanded { width: 100vw; }
         .menu-toggle { background: none; border: none; color: var(--txt); margin-bottom: 0px; cursor: pointer; padding: 10px; transition: color 0.5s; }
@@ -130,7 +129,6 @@
         nav.collapsed .side-title-container { opacity: 0; }
         #floating-menu-btn { position: fixed; top: 15px; left: 12px; z-index: 1100; background: var(--bg); border: 1px solid #999; border-radius: 50%; width: 40px; height: 40px; display: none; align-items: center; justify-content: center; color: var(--primary); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
-        /* MODIFICATION POUR QUE LES IMAGES SUIVENT LE RADIUS DES RÉGLAGES */
         .image-card { border-radius: var(--radius) !important; overflow: hidden; }
         
         .image-card img { 
@@ -147,6 +145,13 @@
     <style id="dynamic-style-overrides"></style>
 </head>
 <body>
+    
+    <div id="pwa-install-container" style="display: none; position: fixed; top: 15px; right: 15px; z-index: 9999;">
+    <button id="pwa-install-btn" style="background: var(--primary); color: var(--primary-txt); border: none; padding: 10px 15px; border-radius: 50px; font-weight: bold; font-family: var(--main-font); font-size: 12px; box-shadow: 0 0 15px var(--primary); display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="download" size="16"></i> INSTALLER
+    </button>
+</div>
+
 
 <iframe id="viz-iframe" src="about:blank"></iframe>
 
@@ -430,7 +435,6 @@
     const DEFAULT_BG = 'https://i.imgur.com/ZnSxdkE.jpeg';
     let sleepTimerInt = null, alarmInt = null, wakeLock = null, nightClockInt = null;
 
-    // FONCTION POUR OUVRIR / FERMER LE MENU
     function toggleNav() {
         const sidebar = document.getElementById('sidebar');
         const main = document.getElementById('scroller');
@@ -465,15 +469,12 @@
         }
     }
 
-    // 1. Remplace ta fonction setupLongPress par celle-ci
 function setupLongPress(element, callback) {
     let pressTimer;
 
     const start = (e) => {
-        // Annule un éventuel timer déjà en cours par sécurité
         clearTimeout(pressTimer);
         pressTimer = window.setTimeout(() => {
-            // On vérifie si l'utilisateur est toujours sur la page avant de déclencher
             if (document.visibilityState === 'visible') {
                 callback();
             }
@@ -486,7 +487,7 @@ function setupLongPress(element, callback) {
 
     element.onmousedown = start;
     element.onmouseup = cancel;
-    element.onmouseleave = cancel; // Ajouté : annule si la souris sort de la zone
+    element.onmouseleave = cancel;
 
     element.ontouchstart = start;
     element.ontouchend = cancel;
@@ -583,7 +584,6 @@ window.addEventListener('visibilitychange', () => {
 
     function changeTrack(dir) { if(state.current.length > 0) { let nextIdx = (state.idx + dir + state.current.length) % state.current.length; play(state.current, nextIdx); } }
     
-    // NOUVELLE FONCTION DE PARTAGE
     function shareStream() {
         const t = state.current[state.idx]; 
         if (!t || t.isMP3) return;
@@ -599,7 +599,7 @@ window.addEventListener('visibilitychange', () => {
                 .then(() => console.log('Partage réussi'))
                 .catch((err) => console.log('Erreur de partage:', err));
         } else {
-            // Fallback si Web Share API non disponible
+
             navigator.clipboard.writeText(t.url);
             alert("Flux copié dans le presse-papier (Partage non supporté)");
         }
@@ -748,7 +748,6 @@ window.addEventListener('visibilitychange', () => {
         lucide.createIcons();
     }
 
-    // FONCTIONS SPECIFIQUES POUR LA BIBLIOTHÈQUE D'IMAGES
     function openImgForm(idx = -1) {
         state.imgEdIdx = idx; const delBtn = document.getElementById('img-del-btn'); let currentCat = "Général";
         if(idx === -1) {
@@ -951,8 +950,7 @@ window.addEventListener('visibilitychange', () => {
         scrollText.textContent = t.name; 
         cardTitleBox.appendChild(scrollText); 
         d.innerHTML = `<img src="${t.image}" onerror="this.src='${DEFAULT_IMG}'">`; 
-        d.appendChild(cardTitleBox); 
-        // Force le calcul immédiat de la vitesse du texte pour cette carte
+        d.appendChild(cardTitleBox);
         setTimeout(() => updateMarqueeSpeed(scrollText), 150); 
         return d; 
     }
@@ -975,9 +973,8 @@ window.addEventListener('visibilitychange', () => {
 
             const trackName = file.name.replace(/\.[^/.]+$/, "");
             
-            // VERIFICATION DOUBLON (dans l'interface)
             const exists = state.mp3[folder].some(t => t.name === trackName);
-            if (exists) continue; // On passe au fichier suivant s'il est déjà là
+            if (exists) continue;
 
             const track = { name: trackName, url: URL.createObjectURL(file), image: DEFAULT_IMG, fileRef: file, isMP3: true };
             state.mp3[folder].push(track);
@@ -1010,8 +1007,8 @@ window.addEventListener('visibilitychange', () => {
         const store = tx.objectStore("mp3");
         const clearReq = store.clear();
         clearReq.onsuccess = () => {
-            state.mp3 = {}; // On vide l'objet en mémoire
-            renderMP3();    // On rafraîchit l'affichage
+            state.mp3 = {};
+            renderMP3();
             alert("✅ Bibliothèque MP3 vidée !");
         };
     }
@@ -1055,12 +1052,11 @@ window.addEventListener('visibilitychange', () => {
         function exportData() { 
         const linkyData = JSON.parse(localStorage.getItem('my_grid_links_v2') || '[]');
         
-        // Extraction des noms et dossiers MP3 pour le JSON (sans les fichiers binaires)
         const mp3Structure = {};
         for (let folder in state.mp3) {
             mp3Structure[folder] = state.mp3[folder].map(track => ({
                 name: track.name,
-                image: track.image // On garde l'image si elle a été extraite des tags
+                image: track.image
             }));
         }
 
@@ -1068,7 +1064,7 @@ window.addEventListener('visibilitychange', () => {
             radios: state.favs,
             linky: linkyData,
             images: state.images,
-            mp3_structure: mp3Structure, // Nouvelle clé pour la structure MP3
+            mp3_structure: mp3Structure,
             exportDate: new Date().toISOString()
         };
         const b = new Blob([JSON.stringify(fullExport)], {type:'application/json'}), a = document.createElement('a'); 
@@ -1097,9 +1093,6 @@ window.addEventListener('visibilitychange', () => {
                         localStorage.setItem('rl_images_v1', JSON.stringify(state.images));
                     }
 
-                    // Note : On ne peut pas réimporter les fichiers MP3 eux-mêmes via JSON 
-                    // car ce sont des fichiers locaux protégés par le navigateur.
-                    // Mais on informe l'utilisateur que sa structure est prête.
                     if (data.mp3_structure) {
                         console.log("Structure MP3 importée : ", data.mp3_structure);
                     }
@@ -1206,6 +1199,37 @@ window.addEventListener('visibilitychange', () => {
         };
         initLinky(); renderFavs(); renderImages(); lucide.createIcons(); 
     };
+    
+    let deferredPrompt;
+    const installContainer = document.getElementById('pwa-install-container');
+    const installBtn = document.getElementById('pwa-install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installContainer.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log("Utilisateur a accepté l'installation");
+            installContainer.style.display = 'none';
+        }
+        deferredPrompt = null;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        installContainer.style.display = 'none';
+        deferredPrompt = null;
+    });
+
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+        installContainer.style.display = 'none';
+    }
+    
 </script>
 </body>
 </html>
