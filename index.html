@@ -777,16 +777,73 @@ window.addEventListener('visibilitychange', () => {
 
     function handleImgCatSelect(select) { const input = document.getElementById('img-cat-new'); if(select.value === "_NEW_") { input.classList.remove('hidden'); input.value = ""; input.focus(); } else { input.classList.add('hidden'); } }
 
-    function loadLocalImgLib(input) { if(input.files[0]) { const r = new FileReader(); r.onload = e => { document.getElementById('img-ed-url').value = e.target.result; document.getElementById('img-ed-prev').src = e.target.result; }; r.readAsDataURL(input.files[0]); } }
+function loadLocalImgLib(input) {
+    if (input.files[0]) {
+        const r = new FileReader();
+        r.onload = e => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1200; // On réduit la largeur pour gagner du poids
+                let width = img.width;
+                let height = img.height;
 
-    function saveImgForm() {
-        const catValue = document.getElementById('img-cat-select').value;
-        const finalCat = (catValue === "_NEW_") ? document.getElementById('img-cat-new').value : catValue;
-        const d = { name: document.getElementById('img-ed-name').value || "IMAGE", url: document.getElementById('img-ed-url').value, category: finalCat || "Général" };
-        if(!d.url) return;
-        if(state.imgEdIdx === -1) state.images.push(d); else state.images[state.imgEdIdx] = d;
-        localStorage.setItem('rl_images_v1', JSON.stringify(state.images)); renderImages(); closeImgForm();
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // On compresse à 70% de qualité (format JPEG pour le poids)
+                const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+                
+                document.getElementById('img-ed-url').value = compressedData;
+                document.getElementById('img-ed-prev').src = compressedData;
+            };
+        };
+        r.readAsDataURL(input.files[0]);
     }
+}
+
+
+function saveImgForm() {
+    const catValue = document.getElementById('img-cat-select').value;
+    const finalCat = (catValue === "_NEW_") ? document.getElementById('img-cat-new').value : catValue;
+    
+    const imgUrl = document.getElementById('img-ed-url').value;
+
+    const d = { 
+        name: document.getElementById('img-ed-name').value || "IMAGE", 
+        url: imgUrl, 
+        category: finalCat || "Général" 
+    };
+
+    if(!d.url) {
+        alert("Veuillez sélectionner une image ou entrer une URL.");
+        return;
+    }
+
+    try {
+        if(state.imgEdIdx === -1) {
+            state.images.push(d);
+        } else {
+            state.images[state.imgEdIdx] = d;
+        }
+        
+        localStorage.setItem('rl_images_v1', JSON.stringify(state.images)); 
+        renderImages(); 
+        closeImgForm();
+    } catch (e) {
+
+        alert("L'image est trop volumineuse pour être sauvegardée. Essayez une image plus légère ou une URL.");
+    }
+}
+
 
     function deleteImage() { if(confirm("Supprimer cette image ?")) { state.images.splice(state.imgEdIdx, 1); localStorage.setItem('rl_images_v1', JSON.stringify(state.images)); renderImages(); closeImgForm(); } }
 
