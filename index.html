@@ -209,7 +209,7 @@
     <div id="v-linky" class="view-section hidden">
         <div class="header-sticky"><h2>LINKY</h2><span class="header-clock">00:00</span></div>
         <center style="padding:20px;"><h4><span style="background:var(--bg)"> Organisation des liens favoris et navigation facile grâce à ce gestionnaire </span></h4><br>
-            <button id="toggle-sort" class="cyber-btn" style="width:auto; border: 1px solid #999; font-size: 15px; padding: 5px 5px;">✏️ ÉDITION ✏️</button></center>
+            <button id="toggle-sort" class="cyber-btn" style="width:auto; border: 1px solid var(--bg); font-size: 15px; padding: 5px 5px;">✏️ ÉDITION ✏️</button></center>
             <hr color="#999">
             <div class="add-link" id="add-btn-li"><div style="font-size: 3em; color: var(--primary);">+</div></div>
             <hr color="#999">
@@ -219,7 +219,7 @@
     <div id="v-images" class="view-section hidden">
         <div class="header-sticky"><h2>IMAGES</h2><span class="header-clock">00:00</span></div>
         <center style="padding:20px;"><h4><span style="background:var(--bg)"> Stockage d'images/photos et personnalisation du fond d'écran de l'application </span></h4><br>
-            <button class="cyber-btn" style="width:auto; border: 1px solid #999; font-size: 15px; padding: 5px 10px;" onclick="openImgForm(-1)">+ AJOUTER</button>
+            <button class="cyber-btn" style="width:auto; border: 1px solid var(--bg); font-size: 15px; padding: 5px 10px;" onclick="openImgForm(-1)">+ AJOUTER</button>
             <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
                 <button id="toggle-grid-img" class="layout-toggle-btn active" onclick="toggleGridLayout('img-list')"><i data-lucide="layout-grid" size="18"></i></button>
             </div>
@@ -231,8 +231,8 @@
     <div id="v-mp3" class="view-section hidden">
         <div class="header-sticky"><h2>MP3</h2><span class="header-clock">00:00</span></div><br><center><h4><span style="background:var(--bg)"> Importation facile du répertoire et écoute agréable à l'aide de ce lecteur MP3 performant </span></h4></center>
         <div class="mp3-import-area">
-        <button class="cyber-btn" style="width:auto; border: 1px solid #999; font-size: 15px; padding: 5px 5px;" onclick="document.getElementById('mp3-folder-in').click()">📁 DOSSIERS 📁</button><br><br>
-        <button class="cyber-btn" style="width:auto; border: 1px solid #999; font-size: 15px; padding: 5px 5px;" onclick="document.getElementById('mp3-file-in').click()">📄 FICHIERS 📄</button>
+        <button class="cyber-btn" style="width:auto; border: 1px solid var(--bg); font-size: 15px; padding: 5px 5px;" onclick="document.getElementById('mp3-folder-in').click()">📁 DOSSIERS 📁</button><br><br>
+        <button class="cyber-btn" style="width:auto; border: 1px solid var(--bg); font-size: 15px; padding: 5px 5px;" onclick="document.getElementById('mp3-file-in').click()">📄 FICHIERS 📄</button>
             <div id="import-msg" class="loader">Importation en cours...</div>
             <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
                 <button id="toggle-grid-mp3" class="layout-toggle-btn active" onclick="toggleGridLayout('mp3-list')"><i data-lucide="layout-grid" size="18"></i></button>
