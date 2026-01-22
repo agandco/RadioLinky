@@ -688,7 +688,7 @@ window.addEventListener('visibilitychange', () => {
         el.style.animationDuration = adjustedDuration + 's'; 
     }
 
-    function updateMediaSession() { const t = state.current[state.idx]; if (!t || !('mediaSession' in navigator)) return; navigator.mediaSession.metadata = new MediaMetadata({ title: t.name, artist: "RadioLinky", artwork: [{ src: t.image || DEFAULT_IMG, sizes: '512x512', type: 'image/png' }] }); navigator.mediaSession.setActionHandler('play', () => toggleAudio()); navigator.mediaSession.setActionHandler('pause', () => toggleAudio()); navigator.mediaSession.setActionHandler('previoustrack', () => changeTrack(-1)); navigator.mediaSession.setActionHandler('nexttrack', () => changeTrack(1)); }
+    function updateMediaSession() { const t = state.current[state.idx]; if (!t || !('mediaSession' in navigator)) return; navigator.mediaSession.metadata = new MediaMetadata({ title: t.name, artist: "RADIOLINKY", artwork: [{ src: t.image || DEFAULT_IMG, sizes: '512x512', type: 'image/png' }] }); navigator.mediaSession.setActionHandler('play', () => toggleAudio()); navigator.mediaSession.setActionHandler('pause', () => toggleAudio()); navigator.mediaSession.setActionHandler('previoustrack', () => changeTrack(-1)); navigator.mediaSession.setActionHandler('nexttrack', () => changeTrack(1)); }
     
     function toggleRadioView(mode) { 
         document.getElementById('radio-search-results').classList.toggle('hidden', mode !== 'search'); 
