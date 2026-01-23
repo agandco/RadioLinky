@@ -234,15 +234,24 @@
     }
 
     function closeViz() {
-        audio.pause();
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-            const exit = document.exitFullscreen || document.webkitExitFullscreen;
-            if (exit) exit.call(document).catch(() => {});
-        }
-        const mode = localStorage.getItem('viz_mode') || 'radio';
-        window.parent.postMessage({action: 'close-visualizer', mode: mode}, '*');
-        window.parent.postMessage('close-visualizer', '*');
+    audio.pause();
+    
+    // Quitter le plein écran
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) exit.call(document).catch(() => {});
     }
+
+    const mode = localStorage.getItem('viz_mode') || 'radio';
+
+    // On envoie d'abord le message simple (pour être sûr que le parent ferme la fenêtre)
+    window.parent.postMessage('close-visualizer', '*');
+
+    // On envoie ensuite l'ordre de rafraîchir l'interface
+    window.parent.postMessage({action: 'close-visualizer', mode: mode}, '*');
+    window.parent.postMessage({action: 'refresh-ui'}, '*');
+}
+
 
     window.onload = () => {
         lucide.createIcons();
