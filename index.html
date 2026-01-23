@@ -614,32 +614,84 @@ window.addEventListener('visibilitychange', () => {
     }
 
             function updateUI() {
-        const t = state.current[state.idx]; if(!t) return; const stdUrl = standardize(t.url);
-        document.getElementById('mini-player').style.display = 'flex'; 
-        const mImg = document.getElementById('m-img'), fsArt = document.getElementById('fs-art'), mName = document.getElementById('m-name'), fsTitle = document.getElementById('fs-title');
-        const finalImg = t.image || DEFAULT_IMG; mImg.src = finalImg; fsArt.src = finalImg; document.getElementById('night-pochette').src = finalImg;
-        mName.innerText = t.name; fsTitle.innerText = t.name; setTimeout(() => { updateMarqueeSpeed(mName); updateMarqueeSpeed(fsTitle); }, 100);
-        const mp3Tools = document.getElementById('fs-mp3-tools'), radioTools = document.getElementById('fs-radio-tools');
-        radioTools.classList.remove('hidden'); 
-        if(t.isMP3) {
-            mp3Tools.classList.remove('hidden'); 
-            document.getElementById('btn-share-stream').classList.add('hidden');
-            const bl = document.getElementById('btn-loop'), loopBadge = document.getElementById('loop-badge');
-            if (state.loop === 0) { bl.classList.remove('active'); loopBadge.classList.add('hidden'); } 
-            else { bl.classList.add('active'); loopBadge.classList.remove('hidden'); loopBadge.innerText = (state.loop === 1) ? "ALL" : "1"; }
-            document.getElementById('btn-shuffle').classList.toggle('active', state.shuffle);
-        } else { 
-            mp3Tools.classList.add('hidden'); 
-            document.getElementById('btn-share-stream').classList.remove('hidden');
+    const t = state.current[state.idx]; if(!t) return; const stdUrl = standardize(t.url);
+    document.getElementById('mini-player').style.display = 'flex'; 
+    
+    const mImg = document.getElementById('m-img'), 
+          fsArt = document.getElementById('fs-art'), 
+          mName = document.getElementById('m-name'), 
+          fsTitle = document.getElementById('fs-title');
+    
+    const finalImg = t.image || DEFAULT_IMG; 
+    mImg.src = finalImg; 
+    fsArt.src = finalImg; 
+    document.getElementById('night-pochette').src = finalImg;
+    
+    mName.innerText = t.name; 
+    fsTitle.innerText = t.name; 
+    
+    setTimeout(() => { 
+        if(mName) updateMarqueeSpeed(mName); 
+        if(fsTitle) updateMarqueeSpeed(fsTitle); 
+    }, 100);
+
+    const mp3Tools = document.getElementById('fs-mp3-tools'), 
+          radioTools = document.getElementById('fs-radio-tools'),
+          shareBtn = document.getElementById('btn-share-stream');
+
+    // On s'assure que radioTools est visible car il contient souvent le bouton visualiseur
+    if(radioTools) radioTools.classList.remove('hidden'); 
+
+    if(t.isMP3) {
+        // --- MODE MP3 ---
+        if(mp3Tools) mp3Tools.classList.remove('hidden'); 
+        if(shareBtn) shareBtn.classList.add('hidden'); // Caché via class, mais géré par ton CSS aussi
+        
+        const bl = document.getElementById('btn-loop'), 
+              loopBadge = document.getElementById('loop-badge');
+        
+        if(bl && loopBadge) {
+            if (state.loop === 0) { 
+                bl.classList.remove('active'); 
+                loopBadge.classList.add('hidden'); 
+            } else { 
+                bl.classList.add('active'); 
+                loopBadge.classList.remove('hidden'); 
+                loopBadge.innerText = (state.loop === 1) ? "ALL" : "1"; 
+            }
         }
-        document.querySelectorAll('.card img, #m-img, #fs-art').forEach(img => {
-            const parentCard = img.closest('.card'); let isCurrentTrack = (img.id === 'm-img' || img.id === 'fs-art');
-            if(parentCard && standardize(parentCard.dataset.url) === stdUrl) isCurrentTrack = true;
-            if(isCurrentTrack) { img.classList.add('is-spinning'); if(state.isP) img.classList.remove('is-paused'); else img.classList.add('is-paused'); } 
-            else { img.classList.remove('is-spinning', 'is-paused'); }
-        });
-        document.getElementById('m-play-ico').setAttribute('data-lucide', state.isP ? 'pause' : 'play'); document.getElementById('fs-play-ico').setAttribute('data-lucide', state.isP ? 'pause' : 'play'); lucide.createIcons();
+        const bShuffle = document.getElementById('btn-shuffle');
+        if(bShuffle) bShuffle.classList.toggle('active', state.shuffle);
+
+    } else { 
+        // --- MODE RADIO ---
+        if(mp3Tools) mp3Tools.classList.add('hidden'); 
+        if(shareBtn) shareBtn.classList.remove('hidden');
     }
+
+    // Gestion de la rotation des pochettes
+    document.querySelectorAll('.card img, #m-img, #fs-art').forEach(img => {
+        const parentCard = img.closest('.card'); 
+        let isCurrentTrack = (img.id === 'm-img' || img.id === 'fs-art');
+        if(parentCard && standardize(parentCard.dataset.url) === stdUrl) isCurrentTrack = true;
+        
+        if(isCurrentTrack) { 
+            img.classList.add('is-spinning'); 
+            state.isP ? img.classList.remove('is-paused') : img.classList.add('is-paused'); 
+        } else { 
+            img.classList.remove('is-spinning', 'is-paused'); 
+        }
+    });
+
+    // Icônes Play/Pause
+    const mPlayIco = document.getElementById('m-play-ico'), 
+          fsPlayIco = document.getElementById('fs-play-ico');
+    if(mPlayIco) mPlayIco.setAttribute('data-lucide', state.isP ? 'pause' : 'play'); 
+    if(fsPlayIco) fsPlayIco.setAttribute('data-lucide', state.isP ? 'pause' : 'play'); 
+    
+    if(window.lucide) lucide.createIcons();
+}
+
 
 
 
