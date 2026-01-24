@@ -60,7 +60,7 @@
         .grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; width: 100%; }
         .grid-1col { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 12px; width: 100%; }
         .card { width: 100%; background: var(--card-gradient); border: var(--border-width) solid #999; border-radius: var(--radius); padding: 10px; text-align: center; cursor: pointer; overflow: hidden; position: relative; transition: background 0.3s; color: var(--txt); opacity: var(--card-opacity); box-shadow: 0 0 var(--glow-intensity) var(--primary); }
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 50%; margin-bottom: 8px; border: 4px solid #999; pointer-events: none; transition: border-color 0.3s; }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 50%; margin-bottom: 8px; border: 2px solid #999; pointer-events: none; transition: border-color 0.3s; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .is-spinning { animation: spin 4s linear infinite; border-color: var(--primary) !important; }
         .is-paused { animation-play-state: paused !important; }
@@ -93,7 +93,7 @@
         .loop-badge { position: absolute; top: -13px; right: 0px; background: var(--primary); color: var(--primary-txt); font-size: 8px; padding: 1px 4px; border-radius: 8px; font-weight: bold; min-width: 12px; text-align: center; }
         .hidden { display: none !important; }
         .cyber-btn { background: var(--primary); color: var(--primary-txt); border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; }
-        #mini-player { position: fixed; bottom: 15px; left: 80px; right: 15px; height: 64px; background: var(--bg); background-image: var(--card-gradient); border: 2px solid var(--primary); border-radius: 32px; display: none; align-items: center; padding: 0 5px; z-index: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
+        #mini-player { position: fixed; bottom: 15px; left: 80px; right: 15px; height: 64px; background: var(--bg); background-image: var(--card-gradient); border: 2px solid var(--primary); border-radius: 32px; display: none; align-items: center; padding: 0 4px; z-index: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
         #m-img-cont { width: 54px; height: 54px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         #m-img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); margin-left: -5px;}
         .cat-picker-btn { width: 100%; background: #222; color: #fff; border: 1px solid #999; padding: 12px; margin-bottom: 8px; border-radius: 8px; text-align: left; font-weight: bold; }
@@ -135,9 +135,9 @@
         
         .image-card img { 
             width: 100% !important; 
-            aspect-ratio: 1/2 !important; /* Carré parfait comme les radios */
+            aspect-ratio: 1/2 !important;
             object-fit: cover !important; 
-            border-radius: var(--radius) !important; /* Utilise maintenant la variable des réglages */
+            border-radius: var(--radius) !important; 
             margin-bottom: 8px !important; 
             border: 4px solid #999 !important; 
             pointer-events: none !important; 
@@ -146,7 +146,6 @@
 #btn-share-stream { 
     display: none !important; 
 }
-
 
     </style>
     <style id="dynamic-style-overrides"></style>
@@ -159,12 +158,8 @@
     </button>
 </div>
 
-
-
 <iframe id="viz-iframe" src="about:blank"></iframe>
-
 <button id="floating-menu-btn" onclick="toggleNav()"><i data-lucide="menu"></i></button>
-
 <div id="night-mode-overlay" onclick="disableNightMode()">
     <div id="night-shifter">
         <img id="night-pochette" src="">
@@ -511,7 +506,6 @@ window.addEventListener('visibilitychange', () => {
     }
 });
 
-
     function applyBgUrl() { const url = document.getElementById('bg-url-input').value; if(url) { setBackground(url); } }
     
     function applyBgFile(input) { 
@@ -613,7 +607,6 @@ window.addEventListener('visibilitychange', () => {
         }
     }
 
-
     function updateUI() {
     const t = (state && state.current) ? state.current[state.idx] : null; 
     if(!t) return; 
@@ -686,8 +679,6 @@ window.addEventListener('visibilitychange', () => {
     if(window.lucide) lucide.createIcons();
 }
 
-
-
     function updateHeaderClock() { const now = new Date(), timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0'); document.querySelectorAll('.header-clock').forEach(el => el.innerText = timeStr); }
     setInterval(updateHeaderClock, 1000); updateHeaderClock();
     
@@ -705,7 +696,7 @@ window.addEventListener('visibilitychange', () => {
         const opacity = document.getElementById('set-opacity').value, marquee = document.getElementById('set-marquee').value, borderW = document.getElementById('set-border-w').value, glow = document.getElementById('set-glow').value;
         document.documentElement.style.setProperty('--card-opacity', opacity); document.documentElement.style.setProperty('--border-width', borderW + 'px'); document.documentElement.style.setProperty('--glow-intensity', glow + 'px');
         const styleOverride = document.getElementById('dynamic-style-overrides');
-        styleOverride.innerHTML = `.card, .link-item, .add-link { border-width: ${borderW}px !important; box-shadow: 0 0 ${glow}px var(--primary) !important; opacity: ${opacity} !important; } #m-img, #fs-art { border-width: ${borderW}px !important; box-shadow: 0 0 ${glow}px var(--primary) !important; }`;
+        styleOverride.innerHTML = `.card, .link-item, .add-link { border-width: ${borderW}px !important; box-shadow: 0 0 ${glow}px var(--primary) !important; opacity: ${opacity} !important; } .card img, #m-img, #fs-art { border-width: ${borderW}px !important; box-shadow: 0 0 ${glow}px var(--primary) !important; }`;
         localStorage.setItem('rl_styles_adv', JSON.stringify({ opacity, marquee, borderW, glow })); 
         document.querySelectorAll('.scrolling-text').forEach(el => updateMarqueeSpeed(el));
     }
@@ -863,7 +854,6 @@ function loadLocalImgLib(input) {
     }
 }
 
-
 function saveImgForm() {
     const catValue = document.getElementById('img-cat-select').value;
     const finalCat = (catValue === "_NEW_") ? document.getElementById('img-cat-new').value : catValue;
@@ -896,7 +886,6 @@ function saveImgForm() {
         alert("L'image est trop volumineuse pour être sauvegardée. Essayez une image plus légère ou une URL.");
     }
 }
-
 
     function deleteImage() { if(confirm("Supprimer cette image ?")) { state.images.splice(state.imgEdIdx, 1); localStorage.setItem('rl_images_v1', JSON.stringify(state.images)); renderImages(); closeImgForm(); } }
 
@@ -1069,7 +1058,6 @@ function saveImgForm() {
     
     async function initDB() { return new Promise(res => { const req = indexedDB.open(dbName, 2); req.onupgradeneeded = (e) => { const db = e.target.result; if(!db.objectStoreNames.contains("mp3")) db.createObjectStore("mp3", { keyPath: "name" }); }; req.onsuccess = () => res(req.result); }); }
 
-
         async function importMP3(input, isFolderMode) {
     const files = Array.from(input.files).filter(f => f.name.toLowerCase().endsWith('.mp3')); 
     if (files.length === 0) return;
@@ -1080,27 +1068,20 @@ function saveImgForm() {
     const db = await initDB();
 
     for (const file of files) {
-        // Dossier par défaut si on ne trouve rien
         let folder = "ARTISTE INCONNU";
-
-        // Lecture des tags ID3
         await new Promise((resolve) => {
             if (window.jsmediatags) {
                 jsmediatags.read(file, {
                     onSuccess: (tag) => {
-                        // On regroupe UNIQUEMENT par ARTISTE
                         if (tag.tags.artist) {
                             folder = tag.tags.artist.toUpperCase().trim();
                         } 
-                        // Si pas d'artiste mais un album, on peut l'utiliser en secours 
-                        // ou rester sur "ARTISTE INCONNU"
                         else if (tag.tags.album) {
                             folder = tag.tags.album.toUpperCase().trim();
                         }
                         resolve();
                     },
                     onError: () => {
-                        // Si échec des tags, on cherche un tiret dans le nom du fichier (ex: Artiste - Titre)
                         if (file.name.includes('-')) {
                             folder = file.name.split('-')[0].trim().toUpperCase();
                         }
@@ -1112,7 +1093,6 @@ function saveImgForm() {
             }
         });
 
-        // Nettoyage final du nom du dossier pour éviter les doublons (ex: "Jul " et "Jul")
         folder = folder.replace(/\s+/g, ' ').trim();
 
         if (!state.mp3[folder]) state.mp3[folder] = [];
@@ -1144,23 +1124,18 @@ function saveImgForm() {
     renderMP3(); 
     input.value = "";
 }
-
     
     function renderMP3() {
     const c = document.getElementById('mp3-list'); 
     if (!c) return;
     c.innerHTML = '';
-
-    // On récupère les dossiers et on les trie
     const folders = Object.keys(state.mp3).sort();
-
     if (folders.length === 0) {
         c.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.5;">Aucun dossier trouvé. Cliquez sur "DOSSIERS" pour importer.</div>';
         return;
     }
 
     folders.forEach(f => {
-        // Sécurité : Si le dossier est vide ou contient des données corrompues, on passe
         if (!state.mp3[f] || !Array.isArray(state.mp3[f])) return;
 
         const acc = document.createElement('div'); 
@@ -1178,8 +1153,6 @@ function saveImgForm() {
         state.mp3[f].forEach((track, i) => {
             const card = createCard(track); 
             card.onclick = () => play(state.mp3[f], i, card);
-
-            // Lecture des tags (pochette) avec gestion d'erreur renforcée pour Chrome
             if (window.jsmediatags && track.fileRef) {
                 try {
                     jsmediatags.read(track.fileRef, {
@@ -1199,7 +1172,6 @@ function saveImgForm() {
                         }
                     });
                 } catch (e) {
-                    // Si jsmediatags plante, on laisse l'image par défaut pour ne pas bloquer l'UI
                 }
             }
 
@@ -1331,7 +1303,6 @@ function saveImgForm() {
         r.readAsText(el.files[0]); el.value = ""; 
     }
 
-
     function updateAlarmGroups() {
         const type = document.getElementById('alarm-type').value, catSel = document.getElementById('alarm-cat'); catSel.innerHTML = '<option value="">-- DOSSIER/CATÉGORIE --</option>';
         if(type === 'fav') [...new Set(state.favs.map(f => f.category || "Général"))].forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; catSel.appendChild(o); });
@@ -1376,32 +1347,23 @@ function saveImgForm() {
     function openVisualizerPage() {
     const t = (state && state.current) ? state.current[state.idx] : null; 
     if(!t) return;
-    
-    // On s'assure que l'URL est valide
     let urlToSave = t.url;
-    
     localStorage.setItem('viz_name', t.name); 
     localStorage.setItem('viz_img', t.image || DEFAULT_IMG); 
     localStorage.setItem('viz_url', urlToSave);
     localStorage.setItem('viz_isMP3', t.isMP3 ? 'true' : 'false');
-
     const iframe = document.getElementById('viz-iframe'); 
     if(iframe) {
-        // Pour les MP3 sur Chrome, on réinitialise l'iframe avant de charger viz.html
         iframe.src = 'about:blank'; 
-        
         setTimeout(() => {
             iframe.src = 'viz.html'; 
-            iframe.style.display = 'block'; 
-            
+            iframe.style.display = 'block';
             if (iframe.requestFullscreen) iframe.requestFullscreen();
             else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
-            
-            // On met en pause AVANT de quitter la page
             if (typeof audio !== 'undefined') audio.pause(); 
             state.isP = false; 
             updateUI();
-        }, 50); // Petit délai pour laisser Chrome respirer
+        }, 50);
     }
 }
 
@@ -1414,8 +1376,6 @@ window.addEventListener('message', function(event) {
             }
         }
     });
-    
-
 
     window.onload = async () => { 
         loadSavedBg(); 
@@ -1471,7 +1431,6 @@ window.addEventListener('message', function(event) {
         installContainer.style.display = 'none';
     }
     
-    // Cet espion surveille les changements dans le DOM pour bloquer le bouton partage
 const shareLockObserver = new MutationObserver(() => {
     const t = state.current[state.idx];
     if (t && t.isMP3) {
@@ -1483,10 +1442,8 @@ const shareLockObserver = new MutationObserver(() => {
     }
 });
 
-// On commence la surveillance sur le corps du document
 shareLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
 
-    
 </script>
 </body>
 </html>
