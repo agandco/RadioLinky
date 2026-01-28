@@ -16,7 +16,7 @@
             --text: #ffffff; 
             --viz: #000000; 
             --contrast-text: #000000; 
-            --contrast-border: #ffffff; /* Variable pour la bordure adaptative */
+            --contrast-border: #ffffff; 
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -55,9 +55,7 @@
             overflow: hidden; 
         }
 
-        /* Correction ici : Utilisation de --contrast-border pour la carte active */
         .playing-this { border-color: var(--contrast-border) !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
-
         .card-art { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-bottom: 10px; }
         
         .title-box { width: 100%; overflow: hidden; white-space: nowrap; position: relative; }
@@ -65,7 +63,11 @@
         .no-scroll { padding-left: 0; animation: none; width: 100%; text-align: center; text-overflow: ellipsis; overflow: hidden; display: block; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-        /* Bordure du mini-player utilisant aussi la variable de contraste */
+        /* Loader d'importation */
+        #import-loader { display: none; margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); }
+        .load-bar-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        #load-bar-fill { width: 0%; height: 100%; background: #fff; transition: width 0.2s; }
+
         #mini-player { 
             position: fixed; bottom: 20px; left: 10px; right: 10px; height: 85px; 
             background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); 
@@ -80,6 +82,9 @@
             background: var(--bg);
             z-index: 2000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; 
         }
+
+        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 20px 0; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; background: var(--accent); border-radius: 10px; width: 0%; transition: width 0.1s linear; }
 
         .btn-circle { 
             width: 55px; height: 55px; border-radius: 50%; 
@@ -109,12 +114,7 @@
 
         .elite-text {
             color: var(--bg);
-            text-shadow: 
-                -1px -1px 0 #fff,  
-                 1px -1px 0 #fff,
-                -1px  1px 0 #fff,
-                 1px  1px 0 #fff,
-                 0px  0px 3px #fff;
+            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff;
             padding: 0 2px;
         }
         * { text-transform: uppercase; }
@@ -130,6 +130,15 @@
         <i data-lucide="settings" onclick="toggleSettings(true)" style="cursor:pointer;"></i>
     </div>
     <button onclick="document.getElementById('mp3-input').click()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid var(--contrast-border); margin-bottom:20px;">+ IMPORTER UN DOSSIER</button>
+    
+    <div id="import-loader">
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:900;">
+            <span id="load-status">IMPORTATION...</span>
+            <span id="load-count">0/0</span>
+        </div>
+        <div class="load-bar-bg"><div id="load-bar-fill"></div></div>
+    </div>
+
     <input type="file" id="mp3-input" webkitdirectory directory multiple hidden>
     <div id="accordion-container"></div>
 </div>
@@ -147,18 +156,24 @@
 <div id="fullscreen-player">
     <div id="fullscreen-area" onclick="requestFullScreen()"></div>
     <div class="btn-switch" onclick="switchViz()"><i data-lucide="audio-lines" size="20"></i></div>
-    
     <div class="btn-fix-fs" id="btn-fix-fs" onclick="requestFullScreen()"><i data-lucide="maximize" size="20"></i></div>
 
     <div style="position:relative; width:340px; height:340px; display:flex; align-items:center; justify-content:center; margin-top:20px;">
         <canvas id="viz-circle" width="340" height="340" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
         <img id="fs-art" src="https://i.imgur.com/vsqN1NZ.png" style="width:210px; height:210px; border-radius:50%; border:4px solid #fff; object-fit:cover; z-index:5;">
     </div>
-    <div style="margin-top:40px; text-align:center; z-index:10; width: 100%; padding: 0 20px;">
-        <div id="fs-clock" style="color:var(--accent); font-weight:700; margin-bottom:15px; letter-spacing: 2px;">00:00:00</div>
+
+    <div style="margin-top:40px; text-align:center; z-index:10; width: 100%; padding: 0 30px;">
+        <div id="fs-clock" style="color:var(--accent); font-weight:700; margin-bottom:5px; letter-spacing: 2px;">00:00:00</div>
+        
+        <div class="progress-container" onclick="seek(event)">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+
         <div class="title-box" style="height:40px;"><span id="fs-title" class="marquee" style="font-size:1.6rem; color:#fff;">Titre</span></div>
         <div id="fs-artist" style="color:var(--accent); font-weight:700; margin-top:5px;">Artiste</div>
     </div>
+
     <div style="display:flex; width:100%; justify-content:space-around; align-items:center; margin-top:30px; z-index:10; padding:0 20px;">
         <i data-lucide="shuffle" class="ctrl-opt" id="shuf-btn" onclick="toggleShuffle()"></i>
         <i data-lucide="skip-back" size="35" onclick="prevTrack()"></i>
@@ -188,17 +203,27 @@
     let config = { bg: '#000000', accent: '#ffffff', viz: '#000000' };
     let audio = new Audio(), audioCtx, analyser, dataArray;
 
+    audio.ontimeupdate = () => {
+        if (audio.duration) {
+            const pct = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('progress').style.width = pct + '%';
+        }
+    };
+
+    function seek(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pct = x / rect.width;
+        audio.currentTime = pct * audio.duration;
+    }
+
     document.addEventListener('fullscreenchange', handleFSChange);
     document.addEventListener('webkitfullscreenchange', handleFSChange);
-    document.addEventListener('mozfullscreenchange', handleFSChange);
-    document.addEventListener('MSFullscreenChange', handleFSChange);
-
+    
     function handleFSChange() {
-        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement;
         const btn = document.getElementById('btn-fix-fs');
-        if (btn) {
-            btn.style.display = isFS ? 'none' : 'flex';
-        }
+        if (btn) btn.style.display = isFS ? 'none' : 'flex';
     }
 
     function getLuminance(hex) {
@@ -214,12 +239,28 @@
 
     document.getElementById('mp3-input').onchange = async (e) => {
         const files = Array.from(e.target.files).filter(f => f.name.toLowerCase().endsWith('.mp3'));
+        if(files.length === 0) return;
+
         const db = await openDB();
+        const loader = document.getElementById('import-loader');
+        const barFill = document.getElementById('load-bar-fill');
+        const countTxt = document.getElementById('load-count');
+        
+        loader.style.display = 'block';
+        let done = 0;
+
         for(let file of files) {
             const meta = await parseFile(file);
             await db.transaction("songs", "readwrite").objectStore("songs").put({name: file.name, data: file, meta: meta});
             playlist.push(meta);
+            
+            done++;
+            let pct = (done / files.length) * 100;
+            barFill.style.width = pct + '%';
+            countTxt.innerText = `${done}/${files.length}`;
         }
+        
+        setTimeout(() => { loader.style.display = 'none'; barFill.style.width = '0%'; }, 1000);
         renderUI();
     };
 
@@ -292,11 +333,7 @@
         document.getElementById('mini-title').innerText = track.title;
         document.getElementById('fs-title').innerText = track.title;
         document.getElementById('fs-artist').innerText = track.artist;
-        
-        audio.play().then(() => {
-            updateMediaSession(track);
-        });
-        
+        audio.play().then(() => updateMediaSession(track));
         isPlaying = true; 
         updateIcons();
         if(!audioCtx) initAudio();
@@ -394,12 +431,12 @@
     function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
     function requestFullScreen() {
         const docEl = document.documentElement;
-        const req = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullScreen;
         if (req) req.call(docEl).catch(() => {});
     }
     function openFullscreen() { 
-        const fs = document.getElementById('fullscreen-player');
-        fs.style.display = 'flex'; handleFSChange(); setTimeout(checkMarquees, 50);
+        document.getElementById('fullscreen-player').style.display = 'flex'; 
+        handleFSChange(); setTimeout(checkMarquees, 50);
     }
     function closeFullscreen() { 
         document.getElementById('fullscreen-player').style.display = 'none'; 
@@ -416,23 +453,13 @@
         config[k] = v; 
         document.documentElement.style.setProperty(`--${k}`, v); 
         localStorage.setItem('MP3_ELITE_STYLE', JSON.stringify(config));
-        
         if(k === 'accent') {
             const luminance = getLuminance(v);
-            
-            // 1. Texte sur les boutons (Noir ou Blanc)
             document.documentElement.style.setProperty('--contrast-text', luminance > 0.5 ? '#000' : '#fff');
-            
-            // 2. Sécurité Horloge et Artiste
             const safeColor = luminance < 0.2 ? '#ffffff' : v;
-            const clock = document.getElementById('fs-clock');
-            const artist = document.getElementById('fs-artist');
-            if(clock) clock.style.color = safeColor;
-            if(artist) artist.style.color = safeColor;
-
-            // 3. Sécurité Bordures (Bascule sur blanc si l'accent est trop sombre)
-            const borderCol = luminance < 0.2 ? '#ffffff' : v;
-            document.documentElement.style.setProperty('--contrast-border', borderCol);
+            if(document.getElementById('fs-clock')) document.getElementById('fs-clock').style.color = safeColor;
+            if(document.getElementById('fs-artist')) document.getElementById('fs-artist').style.color = safeColor;
+            document.documentElement.style.setProperty('--contrast-border', luminance < 0.2 ? '#ffffff' : v);
         }
     }
 
@@ -459,16 +486,11 @@
     }
     audio.onended = () => { if (loopMode !== 1) nextTrack(); };
     window.onload = async () => {
-        // Init Lucide immédiatement pour afficher l'icône paramètre même si vide
         lucide.createIcons();
-
         const saved = localStorage.getItem('MP3_ELITE_STYLE');
         if(saved) { 
             const c = JSON.parse(saved); 
-            Object.keys(c).forEach(k => { 
-                updateStyle(k, c[k]); 
-                if(document.getElementById('in-'+k)) document.getElementById('in-'+k).value = c[k]; 
-            }); 
+            Object.keys(c).forEach(k => { updateStyle(k, c[k]); if(document.getElementById('in-'+k)) document.getElementById('in-'+k).value = c[k]; }); 
         } else { updateStyle('accent', config.accent); }
         const db = await openDB();
         db.transaction("songs").objectStore("songs").getAll().onsuccess = (e) => {
