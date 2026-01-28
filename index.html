@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
     <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
-
+    <meta property="og:title" content="RADIOLINKY">
+    <meta property="og:description" content="Radio, MP3 Elite et Gestionnaire de liens.">
+    <meta property="og:image" content="https://i.imgur.com/vsqN1NZ.png">
+    <meta property="og:url" content="https://radiolinky.com/">
     <title>RADIOLINKY</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
@@ -35,7 +37,6 @@
             -webkit-touch-callout: none;
         }
 
-        /* Menu */
         .menu-container {
             width: 100%;
             background: var(--bg);
@@ -114,8 +115,8 @@
             color: var(--accent);
             opacity: 0.6;
             letter-spacing: 1px;
+            font-size: 0.75rem;
         }
-
     </style>
 </head>
 <body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
@@ -148,7 +149,11 @@
                 LINKY
             </a>
             <hr>
-            <small>SOUTENIR :</small><br>
+            <small>PARTAGER & SOUTENIR :</small><br>
+            <a href="#" class="nav-link" id="share-app-btn">
+                <i data-lucide="share-2"></i>
+                PARTAGER
+            </a>
             <a href="https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56" target="_blank" class="nav-link donate-link">
                 <i data-lucide="heart"></i>
                 FAIRE UN DON
@@ -163,7 +168,6 @@
     <script>
         lucide.createIcons();
 
-        // ÉTAPE 2 : Enregistrement du Service Worker (CRUCIAL pour PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
@@ -190,7 +194,6 @@
         window.addEventListener('resize', updateFrameHeight);
         window.addEventListener('load', updateFrameHeight);
 
-        // Anti-veille
         let wakeLock = null;
         const requestWakeLock = async () => {
             try {
@@ -202,7 +205,6 @@
             if (wakeLock !== null && document.visibilityState === 'visible') { requestWakeLock(); }
         });
         
-        // Logique d'installation
         let deferredPrompt;
         const installContainer = document.getElementById('pwa-install-container');
         const installBtn = document.getElementById('pwa-install-btn');
@@ -245,6 +247,25 @@
             }
         });
         shareLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
+    
+        document.getElementById('share-app-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const shareData = {
+                title: 'RADIOLINKY',
+                text: 'Découvrez le lecteur de radio en ligne et le gestionnaire de favoris, un lecteur MP3 performant et un gestionnaire de liens personnel, le tout disponible sur RADIOLINKY.',
+                url: 'https://radiolinky.com'
+            };
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    await navigator.clipboard.writeText(shareData.url);
+                    alert('Lien copié dans le presse-papier !');
+                }
+            } catch (err) {
+                console.log('Erreur de partage:', err);
+            }
+        });
     </script>
 </body>
 </html>
