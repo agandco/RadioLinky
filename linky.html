@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
+    <title>LINKY - GESTIONNAIRE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #ffffff; 
+            --bg: #000000; 
+            --text: #ffffff; 
+            --border: #ffffff; 
+            --contrast-text: #000000; 
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; text-transform: uppercase; }
+        
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+        .app-container { min-height: 100vh; padding: 20px 15px 100px; width: 100%; scroll-behavior: smooth; }
+        
+        .search-box { position: relative; margin-bottom: 10px; }
+        .search-box input { width: 100%; padding: 18px 20px; border-radius: 18px; border: 2px solid #fff; background: rgba(255,255,255,0.1); color: #fff; font-family: inherit; font-weight: 700; font-size: 1rem; user-select: text; -webkit-user-select: text; }
+
+        .info-tip { font-size: 0.65rem; font-weight: 700; opacity: 0.7; margin-top: 20px; margin-bottom: 20px; text-align: center; letter-spacing: 1px; }
+
+        .category-group { background: rgba(255,255,255,0.05); border-radius: 18px; margin-bottom: 12px; border: 2px solid #fff; overflow: hidden; }
+        .cat-header { padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+
+        .link-card { 
+            background: linear-gradient(to bottom, var(--accent) -200%, #000 100%);
+            border-radius: 20px; padding: 12px; text-align: center; border: 2px solid #fff; height: 200px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative;
+            text-decoration: none; color: inherit; transition: transform 0.2s;
+        }
+        
+        .card-art { width: 100px; height: 100px; border-radius: 18px; object-fit: cover; border: 2px solid #fff; margin-top: 30px; margin-bottom: 20px; background: #1a1a1a; }
+        
+        .title-box { width: 100%; overflow: hidden; white-space: nowrap; position: relative; pointer-events: none; }
+        .marquee { display: inline-block; width: 100%; text-align: center; text-overflow: ellipsis; overflow: hidden; font-weight: 900; font-size: 0.8rem; }
+
+        /* Style ajusté pour l'icône stylo réduite */
+        .edit-icon-overlay { position: absolute; top: 10px; left: 10px; color: var(--text); display: flex; align-items: center; justify-content: center; z-index: 20; cursor: pointer; padding: 0px; }
+        .drag-handle { position: absolute; top: 10px; right: 10px; opacity: 0.7; color: var(--text); z-index: 10; }
+
+        #edit-panel, #settings-panel { position: fixed; inset: 0; background: var(--bg); z-index: 3000; display: none; padding: 30px; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 900; margin-bottom: 8px; font-size: 0.8rem; }
+        .form-group input, .form-group select { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #fff; background: rgba(255,255,255,0.05); color: #fff; font-family: inherit; user-select: text; -webkit-user-select: text; }
+
+        .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; padding: 0 4px; }
+        
+        .btn-add { width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid #fff; margin-bottom:20px; cursor: pointer; }
+
+        .color-row { background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .sortable-ghost { opacity: 0.3; transform: scale(0.9); }
+    </style>
+</head>
+<body oncontextmenu="if(event.target.tagName !== 'INPUT') return false;">
+
+<div class="app-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h1 style="font-weight:900; margin:0;"><span class="elite-text">LINKY</span></h1>
+        <div style="display:flex; gap:15px;">
+            <i data-lucide="move" id="edit-mode-btn" onclick="toggleEditMode()" style="cursor:pointer;"></i>
+            <i data-lucide="settings" onclick="toggleSettings(true)" style="cursor:pointer;"></i>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="link-q" placeholder="Rechercher un lien..." oninput="filterLinks()">
+    </div>
+    
+    <div class="info-tip" id="info-text">ACTIVER LE MODE ÉDITION (FLÈCHES)<br>POUR MODIFIER OU RANGER</div>
+
+    <button class="btn-add" onclick="openEditForm()">+ AJOUTER UN LIEN</button>
+
+    <div id="links-accordion-container"></div>
+</div>
+
+<div id="edit-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+        <h2 style="font-weight:900; margin:0;">ÉDITION LIEN</h2>
+        <i data-lucide="x" onclick="closeEditForm()"></i>
+    </div>
+    <div style="text-align:center; margin-bottom:20px;">
+        <img id="form-preview" src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png" style="width:100px; height:100px; border-radius:15px; border:2px solid var(--accent); object-fit:cover;">
+    </div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group"><label>NOM DU LIEN</label><input type="text" id="f-name"></div>
+    <div class="form-group"><label>URL (HTTPS://...)</label><input type="text" id="f-url" oninput="autoFetchLogo(this.value)"></div>
+    <div class="form-group"><label>CATÉGORIE</label>
+        <select id="f-cat-select" onchange="checkNewCat(this.value)"></select>
+        <input type="text" id="f-cat-new" placeholder="Nom de la nouvelle catégorie" style="display:none; margin-top:10px;">
+    </div>
+    <div class="form-group">
+        <label>URL IMAGE / LOGO</label>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="f-logo" oninput="updatePreview(this.value)" style="flex:1;">
+            <button onclick="searchImage()" style="background:var(--accent); color:var(--contrast-text); border:2px solid #fff; border-radius:12px; padding:0 15px;"><i data-lucide="search" size="20"></i></button>
+        </div>
+    </div>
+    <button onclick="saveLink()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid #fff;">ENREGISTRER</button>
+    <button id="btn-delete" onclick="deleteLink()" style="display:none; width:100%; background:#ff4444; color:#fff; padding:15px; border-radius:15px; font-weight:900; border:none; margin-top:15px;">SUPPRIMER</button>
+</div>
+
+<div id="settings-panel">
+    <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
+        <h2 style="font-weight:900; margin:0;">PARAMÈTRES</h2>
+        <i data-lucide="x" onclick="toggleSettings(false)"></i>
+    </div>
+    
+    <div class="color-row">
+        <label style="font-weight:900;">COULEUR ACCENT</label>
+        <input type="color" id="accent-picker" oninput="updateStyle('accent', this.value)">
+    </div>
+
+    <button onclick="exportData()" style="width:100%; padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none; margin-bottom:10px;">SAUVEGARDER</button>
+    <button onclick="document.getElementById('import-input').click()" style="width:100%; padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none; margin-bottom:10px;">IMPORTER</button>
+    <button onclick="clearDatabase()" style="width:100%; padding:15px; border-radius:12px; background:#ff4444; color:#fff; font-weight:800; border:none;">NETTOYER TOUT</button>
+    <input type="file" id="import-input" hidden onchange="importData(this)">
+</div>
+
+<script>
+    let links = [];
+    let isEditMode = false;
+    let sortables = [];
+    const dbName = "LINKY_DB";
+    const defaultIcon = "https://cdn-icons-png.flaticon.com/512/1006/1006771.png";
+
+    function updatePreview(url) {
+        document.getElementById('form-preview').src = url || defaultIcon;
+    }
+
+    function autoFetchLogo(url) {
+        if (!document.getElementById('f-logo').value && url.startsWith('http')) {
+            try {
+                const domain = new URL(url).hostname;
+                updatePreview(`https://www.google.com/s2/favicons?sz=128&domain=${domain}`);
+            } catch (e) {}
+        }
+    }
+
+    function getLuminance(hex) {
+        const rgb = hex.replace(/^#/, '').match(/.{2}/g).map(x => parseInt(x, 16) / 255);
+        const [r, g, b] = rgb.map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function updateStyle(k, v) {
+        document.documentElement.style.setProperty(`--${k}`, v);
+        localStorage.setItem(`LINKY_${k}`, v);
+        if (k === 'accent') {
+            const lum = getLuminance(v);
+            document.documentElement.style.setProperty('--contrast-text', lum > 0.5 ? '#000' : '#fff');
+        }
+    }
+
+    function loadSavedStyles() {
+        const savedAccent = localStorage.getItem('LINKY_accent') || '#ffffff';
+        updateStyle('accent', savedAccent);
+        document.getElementById('accent-picker').value = savedAccent;
+    }
+
+    const openDB = () => new Promise(res => {
+        let req = indexedDB.open(dbName, 1);
+        req.onupgradeneeded = e => { 
+            let db = e.target.result;
+            db.createObjectStore("links", {keyPath: "id", autoIncrement: true}); 
+        };
+        req.onsuccess = e => res(e.target.result);
+    });
+
+    async function loadLinks() {
+        const db = await openDB();
+        db.transaction("links").objectStore("links").getAll().onsuccess = (e) => {
+            links = e.target.result;
+            renderLinks();
+        };
+    }
+
+    function renderLinks(filter = "") {
+        const container = document.getElementById('links-accordion-container');
+        container.innerHTML = "";
+        sortables = [];
+        
+        let filtered = links.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()));
+        const cats = [...new Set(filtered.map(l => l.cat || 'DIVERS'))].sort((a, b) => a.localeCompare(b));
+
+        cats.forEach(cat => {
+            const group = document.createElement('div');
+            group.className = "category-group";
+            
+            const catLinks = filtered.filter(l => (l.cat || 'DIVERS') === cat)
+                                   .sort((a,b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name));
+            
+            group.innerHTML = `
+                <div class="cat-header" onclick="toggleAccordion(this)">
+                    <span>${cat} (${catLinks.length})</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="grid-container" style="display:${filter || isEditMode ? 'grid' : 'none'}">
+                    ${catLinks.map(l => `
+                        <div class="link-card" data-id="${l.id}" onclick="${isEditMode ? '' : `window.open('${l.url}', '_blank')`}">
+                            ${isEditMode ? `
+                                <div class="edit-icon-overlay" onclick="openEditForm(${l.id}); event.stopPropagation();">
+                                    <i data-lucide="pen-line" size="14"></i>
+                                </div>
+                                <div class="drag-handle">
+                                    <i data-lucide="grip-vertical" size="18"></i>
+                                </div>
+                            ` : ''}
+                            <img src="${l.logo || defaultIcon}" class="card-art">
+                            <div class="title-box"><span class="marquee">${l.name}</span></div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            container.appendChild(group);
+
+            if(isEditMode) {
+                const grid = group.querySelector('.grid-container');
+                sortables.push(new Sortable(grid, {
+                    animation: 150,
+                    handle: '.link-card',
+                    filter: '.edit-icon-overlay', 
+                    preventOnFilter: false,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: saveNewOrder
+                }));
+            }
+        });
+        lucide.createIcons();
+    }
+
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        const btn = document.getElementById('edit-mode-btn');
+        const info = document.getElementById('info-text');
+        
+        btn.style.color = isEditMode ? '#ff4444' : '#fff';
+        info.innerHTML = isEditMode ? "MODE ÉDITION : CLIQUEZ SUR LE STYLO POUR MODIFIER OU GLISSEZ POUR RANGER" : "ACTIVER LE MODE ÉDITION (FLÈCHES)<br>POUR MODIFIER OU RANGER";
+        
+        renderLinks(document.getElementById('link-q').value);
+    }
+
+    async function saveNewOrder() {
+        const db = await openDB();
+        const tx = db.transaction("links", "readwrite");
+        const store = tx.objectStore("links");
+        
+        const cards = document.querySelectorAll('.link-card');
+        cards.forEach((card, index) => {
+            const id = parseInt(card.dataset.id);
+            const link = links.find(l => l.id === id);
+            if(link) {
+                link.order = index;
+                store.put(link);
+            }
+        });
+    }
+
+    function toggleAccordion(el) {
+        if(isEditMode) return;
+        const grid = el.nextElementSibling;
+        const isOpen = grid.style.display === 'grid';
+        grid.style.display = isOpen ? 'none' : 'grid';
+        el.querySelector('i').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function filterLinks() {
+        renderLinks(document.getElementById('link-q').value);
+    }
+
+    function openEditForm(id = null) {
+        document.getElementById('edit-panel').style.display = 'block';
+        const select = document.getElementById('f-cat-select');
+        const cats = [...new Set(links.map(l => l.cat || 'DIVERS'))].sort();
+        select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="NEW">+ NOUVELLE CATÉGORIE</option>';
+
+        if(id) {
+            const l = links.find(x => x.id === id);
+            document.getElementById('edit-id').value = l.id;
+            document.getElementById('f-name').value = l.name;
+            document.getElementById('f-url').value = l.url;
+            document.getElementById('f-logo').value = l.logo;
+            document.getElementById('f-cat-select').value = l.cat;
+            document.getElementById('f-cat-new').style.display = 'none';
+            updatePreview(l.logo);
+            document.getElementById('btn-delete').style.display = 'block';
+        } else {
+            document.getElementById('edit-id').value = "";
+            document.getElementById('f-name').value = "";
+            document.getElementById('f-url').value = "";
+            document.getElementById('f-logo').value = "";
+            document.getElementById('f-cat-new').value = "";
+            document.getElementById('f-cat-new').style.display = 'none';
+            updatePreview(null);
+            document.getElementById('btn-delete').style.display = 'none';
+        }
+    }
+
+    function closeEditForm() { document.getElementById('edit-panel').style.display = 'none'; }
+
+    function checkNewCat(val) {
+        document.getElementById('f-cat-new').style.display = (val === 'NEW') ? 'block' : 'none';
+    }
+
+    async function saveLink() {
+        const db = await openDB();
+        const tx = db.transaction("links", "readwrite");
+        const store = tx.objectStore("links");
+        
+        let category = document.getElementById('f-cat-select').value;
+        if(category === 'NEW') category = document.getElementById('f-cat-new').value.trim() || 'DIVERS';
+        
+        let finalLogo = document.getElementById('f-logo').value;
+        if (!finalLogo) {
+            try {
+                const domain = new URL(document.getElementById('f-url').value).hostname;
+                finalLogo = `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
+            } catch(e) { finalLogo = defaultIcon; }
+        }
+        
+        const linkData = {
+            name: document.getElementById('f-name').value || "SANS NOM",
+            url: document.getElementById('f-url').value || "#",
+            logo: finalLogo,
+            cat: category.toUpperCase(),
+            order: 0
+        };
+
+        const id = document.getElementById('edit-id').value;
+        if(id) linkData.id = parseInt(id);
+        
+        store.put(linkData);
+        tx.oncomplete = () => { closeEditForm(); loadLinks(); };
+    }
+
+    async function deleteLink() {
+        if(!confirm("SUPPRIMER CE LIEN ?")) return;
+        const db = await openDB();
+        const tx = db.transaction("links", "readwrite");
+        tx.objectStore("links").delete(parseInt(document.getElementById('edit-id').value));
+        tx.oncomplete = () => { closeEditForm(); loadLinks(); };
+    }
+
+    async function clearDatabase() {
+        if(!confirm("ATTENTION : TOUS LES LIENS SERONT SUPPRIMÉS. CONTINUER ?")) return;
+        const db = await openDB();
+        const tx = db.transaction("links", "readwrite");
+        tx.objectStore("links").clear();
+        tx.oncomplete = () => { loadLinks(); alert("BASE DE DONNÉES NETTOYÉE"); toggleSettings(false); };
+    }
+
+    function searchImage() {
+        const name = document.getElementById('f-name').value;
+        if(name) window.open(`https://www.google.com/search?q=${encodeURIComponent(name)}+logo+png&tbm=isch`, '_blank');
+    }
+
+    function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
+
+    async function exportData() {
+        const db = await openDB();
+        db.transaction("links").objectStore("links").getAll().onsuccess = (e) => {
+            const blob = new Blob([JSON.stringify(e.target.result, null, 2)], {type: "application/json"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = "linky_backup.json"; a.click();
+        };
+    }
+
+    function importData(input) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const data = JSON.parse(e.target.result);
+            const db = await openDB();
+            const tx = db.transaction("links", "readwrite");
+            data.forEach(l => { delete l.id; tx.objectStore("links").add(l); });
+            tx.oncomplete = () => { loadLinks(); alert("IMPORT RÉUSSI"); };
+        };
+        reader.readAsText(input.files[0]);
+    }
+
+    window.onload = () => {
+        loadSavedStyles();
+        loadLinks();
+    };
+</script>
+</body>
+</html>

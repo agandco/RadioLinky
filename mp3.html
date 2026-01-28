@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
+    <title>MP3 ELITE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #ffffff; 
+            --bg: #000000; 
+            --text: #ffffff; 
+            --viz: #000000; 
+            --contrast-text: #000000; 
+            --contrast-border: #ffffff; /* Variable pour la bordure adaptative */
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; 
+            background: var(--bg);
+            color: var(--text); 
+            font-family: 'Montserrat', sans-serif; 
+            min-height: 100vh; 
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .app-container { min-height: 100vh; padding: 20px 15px 180px; width: 100%; scroll-behavior: smooth; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .is-spinning { animation: rotate 10s linear infinite !important; }
+        
+        .accordion { background: rgba(255,255,255,0.05); border-radius: 18px; margin-bottom: 12px; border: 2px solid #fff; overflow: hidden;}
+        .acc-header { padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; }
+        .acc-content { display: none; padding: 10px; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .accordion.active .acc-content { display: grid; }
+
+        .music-card { 
+            background: linear-gradient(to bottom, var(--accent) -200%, #000 100%);
+            border-radius: 20px; 
+            padding: 12px; 
+            text-align: center; 
+            border: 2px solid #fff; 
+            height: 180px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+        }
+
+        /* Correction ici : Utilisation de --contrast-border pour la carte active */
+        .playing-this { border-color: var(--contrast-border) !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        .card-art { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-bottom: 10px; }
+        
+        .title-box { width: 100%; overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee { display: inline-block; padding-left: 100%; animation: scroll 8s linear infinite; font-weight: 900; }
+        .no-scroll { padding-left: 0; animation: none; width: 100%; text-align: center; text-overflow: ellipsis; overflow: hidden; display: block; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        /* Bordure du mini-player utilisant aussi la variable de contraste */
+        #mini-player { 
+            position: fixed; bottom: 20px; left: 10px; right: 10px; height: 85px; 
+            background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); 
+            border: 2px solid var(--contrast-border); 
+            border-radius: 25px; 
+            display: flex; align-items: center; padding: 0 15px; z-index: 1000; 
+            cursor: pointer;
+        }
+        
+        #fullscreen-player { 
+            position: fixed; inset: 0; 
+            background: var(--bg);
+            z-index: 2000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; 
+        }
+
+        .btn-circle { 
+            width: 55px; height: 55px; border-radius: 50%; 
+            background: var(--accent); color: var(--contrast-text); 
+            border: 2px solid #fff; display: flex; align-items: center; 
+            justify-content: center; cursor: pointer; 
+        }
+        
+        .btn-mini-play {
+            width: 53px; height: 53px; 
+            border: 2px solid #fff;
+            padding: 2px; 
+            background-clip: content-box; 
+            background-color: var(--accent);
+        }
+
+        .ctrl-opt { opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .ctrl-active { opacity: 1; color: var(--accent); }
+        #settings-panel { position: fixed; inset: 0; background: var(--bg); z-index: 3000; display: none; padding: 30px; }
+        .color-row { background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        #fs-viz { position: absolute; bottom: 0; left: 0; width: 100%; height: 200px; pointer-events: none; }
+        
+        .btn-switch { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 2px solid #fff; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2100; cursor: pointer; transition: 0.3s; }
+        .btn-switch:active { transform: scale(0.9); background: var(--accent); color: var(--contrast-text); }
+
+        .btn-fix-fs { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 2px solid #fff; width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 2100; cursor: pointer; }
+
+        .elite-text {
+            color: var(--bg);
+            text-shadow: 
+                -1px -1px 0 #fff,  
+                 1px -1px 0 #fff,
+                -1px  1px 0 #fff,
+                 1px  1px 0 #fff,
+                 0px  0px 3px #fff;
+            padding: 0 2px;
+        }
+        * { text-transform: uppercase; }
+        #fullscreen-area { position: absolute; top:0; left:0; width:100%; height:85%; z-index: 5; }
+
+    </style>
+</head>
+<body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
+
+<div class="app-container" id="main-scroll">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h1 style="font-weight:900; margin:0;">MP3 <span class="elite-text">ELITE</span></h1>
+        <i data-lucide="settings" onclick="toggleSettings(true)" style="cursor:pointer;"></i>
+    </div>
+    <button onclick="document.getElementById('mp3-input').click()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid var(--contrast-border); margin-bottom:20px;">+ IMPORTER UN DOSSIER</button>
+    <input type="file" id="mp3-input" webkitdirectory directory multiple hidden>
+    <div id="accordion-container"></div>
+</div>
+
+<div id="mini-player" onclick="requestFullScreen(); openFullscreen()">
+    <button class="btn-circle btn-mini-play" onclick="event.stopPropagation(); togglePlay()">
+        <i data-lucide="play" id="btn-play-mini" style="color: inherit;"></i>
+    </button>
+    <div style="flex:1; margin:0 15px; overflow:hidden;" class="title-box">
+        <span id="mini-title" class="marquee" style="font-size:0.85rem; color: #fff;">Sélectionnez une musique</span>
+    </div>
+    <img id="mini-art" src="https://i.imgur.com/vsqN1NZ.png" style="width:55px; height:55px; border-radius:50%; object-fit:cover; border:2px solid var(--contrast-border);">
+</div>
+
+<div id="fullscreen-player">
+    <div id="fullscreen-area" onclick="requestFullScreen()"></div>
+    <div class="btn-switch" onclick="switchViz()"><i data-lucide="audio-lines" size="20"></i></div>
+    
+    <div class="btn-fix-fs" id="btn-fix-fs" onclick="requestFullScreen()"><i data-lucide="maximize" size="20"></i></div>
+
+    <div style="position:relative; width:340px; height:340px; display:flex; align-items:center; justify-content:center; margin-top:20px;">
+        <canvas id="viz-circle" width="340" height="340" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
+        <img id="fs-art" src="https://i.imgur.com/vsqN1NZ.png" style="width:210px; height:210px; border-radius:50%; border:4px solid #fff; object-fit:cover; z-index:5;">
+    </div>
+    <div style="margin-top:40px; text-align:center; z-index:10; width: 100%; padding: 0 20px;">
+        <div id="fs-clock" style="color:var(--accent); font-weight:700; margin-bottom:15px; letter-spacing: 2px;">00:00:00</div>
+        <div class="title-box" style="height:40px;"><span id="fs-title" class="marquee" style="font-size:1.6rem; color:#fff;">Titre</span></div>
+        <div id="fs-artist" style="color:var(--accent); font-weight:700; margin-top:5px;">Artiste</div>
+    </div>
+    <div style="display:flex; width:100%; justify-content:space-around; align-items:center; margin-top:30px; z-index:10; padding:0 20px;">
+        <i data-lucide="shuffle" class="ctrl-opt" id="shuf-btn" onclick="toggleShuffle()"></i>
+        <i data-lucide="skip-back" size="35" onclick="prevTrack()"></i>
+        <button class="btn-circle btn-mini-play" onclick="togglePlay()"><i data-lucide="play" id="btn-play-fs" size="30" style="color: inherit;"></i></button>
+        <i data-lucide="skip-forward" size="35" onclick="nextTrack()"></i>
+        <div style="position:relative;" onclick="toggleLoop()">
+            <span id="loop-tag" style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:900; color:var(--accent); opacity:0;">1</span>
+            <i data-lucide="repeat" class="ctrl-opt" id="loop-btn"></i>
+        </div>
+    </div>
+    <canvas id="fs-viz"></canvas>
+    <i data-lucide="chevron-down" style="position:absolute; bottom:30px; transform:scale(1); cursor:pointer;" onclick="closeFullscreen()"></i>
+</div>
+
+<div id="settings-panel">
+    <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
+        <h2 style="font-weight:900; margin:0;">PERSONNALISATION</h2>
+        <i data-lucide="x" onclick="toggleSettings(false)" style="pointer-events:auto;"></i>
+    </div>
+    <div class="color-row"><label style="font-weight:900;">COULEUR ACCENT</label><input type="color" id="in-accent" onchange="updateStyle('accent', this.value)"></div>
+    <div class="color-row"><label style="font-weight:900;">COULEUR VISU</label><input type="color" id="in-viz" onchange="updateStyle('viz', this.value)"></div>
+</div>
+
+<script>
+    let playlist = [], currentIndex = 0, isPlaying = false, vizMode = 'bars';
+    let isShuffle = false, loopMode = 0;
+    let config = { bg: '#000000', accent: '#ffffff', viz: '#000000' };
+    let audio = new Audio(), audioCtx, analyser, dataArray;
+
+    document.addEventListener('fullscreenchange', handleFSChange);
+    document.addEventListener('webkitfullscreenchange', handleFSChange);
+    document.addEventListener('mozfullscreenchange', handleFSChange);
+    document.addEventListener('MSFullscreenChange', handleFSChange);
+
+    function handleFSChange() {
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        const btn = document.getElementById('btn-fix-fs');
+        if (btn) {
+            btn.style.display = isFS ? 'none' : 'flex';
+        }
+    }
+
+    function getLuminance(hex) {
+        const rgb = hex.replace(/^#/, '').match(/.{2}/g).map(x => parseInt(x, 16));
+        return (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+    }
+
+    const openDB = () => new Promise(res => {
+        let req = indexedDB.open("MP3_ELITE_DB", 2);
+        req.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains("songs")) e.target.result.createObjectStore("songs", {keyPath: "name"}); };
+        req.onsuccess = e => res(e.target.result);
+    });
+
+    document.getElementById('mp3-input').onchange = async (e) => {
+        const files = Array.from(e.target.files).filter(f => f.name.toLowerCase().endsWith('.mp3'));
+        const db = await openDB();
+        for(let file of files) {
+            const meta = await parseFile(file);
+            await db.transaction("songs", "readwrite").objectStore("songs").put({name: file.name, data: file, meta: meta});
+            playlist.push(meta);
+        }
+        renderUI();
+    };
+
+    function parseFile(file) {
+        return new Promise(resolve => {
+            jsmediatags.read(file, {
+                onSuccess: (tag) => {
+                    let cover = "https://i.imgur.com/vsqN1NZ.png";
+                    if(tag.tags.picture) {
+                        const {data, format} = tag.tags.picture;
+                        cover = `data:${format};base64,${btoa(data.reduce((acc, cur) => acc + String.fromCharCode(cur), ""))}`;
+                    }
+                    resolve({url: URL.createObjectURL(file), title: tag.tags.title || file.name, artist: tag.tags.artist || "Inconnu", cover});
+                },
+                onError: () => resolve({url: URL.createObjectURL(file), title: file.name, artist: "Inconnu", cover: "https://i.imgur.com/vsqN1NZ.png"})
+            });
+        });
+    }
+
+    function renderUI() {
+        const container = document.getElementById('accordion-container');
+        container.innerHTML = "";
+        const groups = {};
+        playlist.forEach((t, i) => { if(!groups[t.artist]) groups[t.artist] = []; groups[t.artist].push({...t, idx: i}); });
+        Object.keys(groups).sort().forEach(artist => {
+            const acc = document.createElement('div');
+            acc.className = "accordion";
+            acc.innerHTML = `<div class="acc-header" onclick="toggleAcc(this)"><span>${artist} (${groups[artist].length})</span><i data-lucide="chevron-down"></i></div>
+                <div class="acc-content">${groups[artist].map(t => `<div class="music-card" id="card-${t.idx}" onclick="playTrack(${t.idx}, true)">
+                <img src="${t.cover}" class="card-art">
+                <div class="title-box"><span class="marquee">${t.title}</span></div></div>`).join('')}</div>`;
+            container.appendChild(acc);
+        });
+        setTimeout(checkMarquees, 100); lucide.createIcons();
+    }
+
+    function toggleAcc(el) {
+        const acc = el.parentElement;
+        const wasActive = acc.classList.contains('active');
+        document.querySelectorAll('.accordion').forEach(a => a.classList.remove('active'));
+        if(!wasActive) {
+            acc.classList.add('active');
+            setTimeout(() => { 
+                const elementPosition = acc.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - 15;
+                window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                checkMarquees();
+            }, 300);
+        }
+    }
+
+    function playTrack(idx, shouldScroll = false) {
+        currentIndex = idx;
+        const track = playlist[idx];
+        audio.src = track.url;
+        document.querySelectorAll('.card-art').forEach(img => img.classList.remove('is-spinning'));
+        document.querySelectorAll('.music-card').forEach(c => c.classList.remove('playing-this'));
+        const targetCard = document.getElementById(`card-${idx}`);
+        if(targetCard) {
+            targetCard.classList.add('playing-this');
+            if(shouldScroll) {
+                setTimeout(() => { 
+                    const cardPos = targetCard.getBoundingClientRect().top + window.pageYOffset - 15;
+                    window.scrollTo({ top: cardPos, behavior: 'smooth' });
+                }, 100);
+            }
+        }
+        document.getElementById('mini-art').src = track.cover;
+        document.getElementById('fs-art').src = track.cover;
+        document.getElementById('mini-title').innerText = track.title;
+        document.getElementById('fs-title').innerText = track.title;
+        document.getElementById('fs-artist').innerText = track.artist;
+        
+        audio.play().then(() => {
+            updateMediaSession(track);
+        });
+        
+        isPlaying = true; 
+        updateIcons();
+        if(!audioCtx) initAudio();
+        setTimeout(checkMarquees, 50);
+    }
+
+    function updateMediaSession(track) {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: track.title, artist: track.artist, album: "Elite MP3 Player", artwork: [{ src: track.cover, sizes: '512x512', type: 'image/png' }]
+            });
+            navigator.mediaSession.setActionHandler('play', () => togglePlay());
+            navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+            navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
+            navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack());
+        }
+    }
+
+    function togglePlay() { 
+        if (isPlaying) audio.pause(); else audio.play();
+        isPlaying = !isPlaying; 
+        updateIcons(); 
+    }
+
+    function updateIcons() {
+        const icon = isPlaying ? 'pause' : 'play';
+        document.getElementById('btn-play-mini').setAttribute('data-lucide', icon);
+        document.getElementById('btn-play-fs').setAttribute('data-lucide', icon);
+        const currentCardArt = document.querySelector('.playing-this .card-art');
+        const miniArt = document.getElementById('mini-art');
+        const fsArt = document.getElementById('fs-art');
+        [currentCardArt, miniArt, fsArt].forEach(img => {
+            if(img) isPlaying ? img.classList.add('is-spinning') : img.classList.remove('is-spinning');
+        });
+        lucide.createIcons();
+    }
+
+    function draw() {
+        requestAnimationFrame(draw); if (!analyser) return;
+        analyser.getByteFrequencyData(dataArray);
+        const canvas = document.getElementById('fs-viz'); const ctx = canvas.getContext('2d');
+        const cCan = document.getElementById('viz-circle'); const cCtx = cCan.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = 200;
+        ctx.clearRect(0, 0, canvas.width, canvas.height); cCtx.clearRect(0, 0, 340, 340);
+        
+        const themeColor = config.viz; const secondaryColor = "#ffffff";
+        let lowFreqSum = 0; for(let j = 0; j < 4; j++) { lowFreqSum += dataArray[j]; }
+        let lowFreqAvg = lowFreqSum / 4;
+        let scaleValue = 1 + (lowFreqAvg / 255) * 0.25;
+        document.getElementById('fs-art').style.transform = `scale(${scaleValue})`;
+        document.getElementById('fs-art').style.boxShadow = `0 0 ${1 + (lowFreqAvg / 20)}px var(--accent), 0 0 ${2 + (lowFreqAvg / 10)}px ${secondaryColor}`;
+
+        if(vizMode === 'bars' || vizMode === 'both') {
+            const bufferLength = 64; const barWidth = canvas.width / bufferLength; let x = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const valRaw = dataArray[i * 2]; const val = Math.pow(valRaw / 255, 1.2) * 255;
+                const barHeight = (val / 255) * canvas.height;
+                if (barHeight > 0) {
+                    const actualBarWidth = barWidth - 4; const barY = canvas.height - barHeight;
+                    let grad = ctx.createLinearGradient(0, canvas.height, 0, barY);
+                    grad.addColorStop(0, "rgba(0,0,0,0.2)"); grad.addColorStop(0.5, themeColor); grad.addColorStop(1, secondaryColor);
+                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(x, barY, actualBarWidth, barHeight, [15, 15, 0, 0]); ctx.fill();
+                    ctx.fillStyle = "#ff0000"; ctx.beginPath(); ctx.arc(x + (actualBarWidth/2), barY + 1, 1.2, 0, Math.PI*2); ctx.fill();
+                }
+                x += barWidth;
+            }
+        }
+
+        if(vizMode === 'circle' || vizMode === 'both') {
+            cCtx.save(); cCtx.translate(170, 170); const bars = 120; const radius = 108; 
+            for (let i = 0; i < bars; i++) {
+                const angle = i * ((Math.PI * 2) / bars); const dataIdx = Math.abs((i % 80) - 40);
+                const val = Math.pow(dataArray[dataIdx] / 255, 1.2) * 255; const h = (val / 255) * 65;
+                const xEnd = Math.cos(angle) * (radius + h); const yEnd = Math.sin(angle) * (radius + h);
+                let grad = cCtx.createRadialGradient(0, 0, radius, 0, 0, radius + h);
+                grad.addColorStop(0, "rgba(0,0,0,0.1)"); grad.addColorStop(0.5, themeColor); grad.addColorStop(1, secondaryColor);
+                cCtx.strokeStyle = grad; cCtx.lineWidth = 2.8; cCtx.lineCap = "round";
+                cCtx.beginPath(); cCtx.moveTo(Math.cos(angle)*radius, Math.sin(angle)*radius); cCtx.lineTo(xEnd, yEnd); cCtx.stroke();
+                if(h > 2) { cCtx.fillStyle = "#ff0000"; cCtx.beginPath(); cCtx.arc(xEnd, yEnd, 1.3, 0, Math.PI*2); cCtx.fill(); }
+            }
+            cCtx.restore();
+        }
+    }
+
+    function checkMarquees() {
+        document.querySelectorAll('.title-box').forEach(box => {
+            const span = box.querySelector('.marquee');
+            if(span) {
+                span.classList.add('no-scroll');
+                if (span.scrollWidth > box.offsetWidth) span.classList.remove('no-scroll');
+            }
+        });
+    }
+
+    function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
+    function requestFullScreen() {
+        const docEl = document.documentElement;
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        if (req) req.call(docEl).catch(() => {});
+    }
+    function openFullscreen() { 
+        const fs = document.getElementById('fullscreen-player');
+        fs.style.display = 'flex'; handleFSChange(); setTimeout(checkMarquees, 50);
+    }
+    function closeFullscreen() { 
+        document.getElementById('fullscreen-player').style.display = 'none'; 
+        if (document.fullscreenElement) document.exitFullscreen();
+    }
+    function switchViz() {
+        if (vizMode === 'bars') vizMode = 'circle';
+        else if (vizMode === 'circle') vizMode = 'both';
+        else if (vizMode === 'both') vizMode = 'none';
+        else vizMode = 'bars';
+    }
+
+    function updateStyle(k, v) { 
+        config[k] = v; 
+        document.documentElement.style.setProperty(`--${k}`, v); 
+        localStorage.setItem('MP3_ELITE_STYLE', JSON.stringify(config));
+        
+        if(k === 'accent') {
+            const luminance = getLuminance(v);
+            
+            // 1. Texte sur les boutons (Noir ou Blanc)
+            document.documentElement.style.setProperty('--contrast-text', luminance > 0.5 ? '#000' : '#fff');
+            
+            // 2. Sécurité Horloge et Artiste
+            const safeColor = luminance < 0.2 ? '#ffffff' : v;
+            const clock = document.getElementById('fs-clock');
+            const artist = document.getElementById('fs-artist');
+            if(clock) clock.style.color = safeColor;
+            if(artist) artist.style.color = safeColor;
+
+            // 3. Sécurité Bordures (Bascule sur blanc si l'accent est trop sombre)
+            const borderCol = luminance < 0.2 ? '#ffffff' : v;
+            document.documentElement.style.setProperty('--contrast-border', borderCol);
+        }
+    }
+
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
+        audioCtx.createMediaElementSource(audio).connect(analyser);
+        analyser.connect(audioCtx.destination);
+        dataArray = new Uint8Array(analyser.frequencyBinCount); draw();
+    }
+
+    function nextTrack() {
+        if (isShuffle) playTrack(Math.floor(Math.random() * playlist.length));
+        else playTrack((currentIndex + 1) % playlist.length);
+    }
+    function prevTrack() { playTrack((currentIndex - 1 + playlist.length) % playlist.length); }
+    function toggleShuffle() { isShuffle = !isShuffle; document.getElementById('shuf-btn').classList.toggle('ctrl-active', isShuffle); }
+    function toggleLoop() {
+        loopMode = (loopMode + 1) % 3;
+        const btn = document.getElementById('loop-btn'), tag = document.getElementById('loop-tag');
+        if (loopMode === 0) { btn.classList.remove('ctrl-active'); tag.style.opacity = "0"; audio.loop = false; }
+        else if (loopMode === 1) { btn.classList.add('ctrl-active'); tag.innerText = "1"; tag.style.opacity = "1"; audio.loop = true; }
+        else { btn.classList.add('ctrl-active'); tag.innerText = "ALL"; tag.style.opacity = "1"; audio.loop = false; }
+    }
+    audio.onended = () => { if (loopMode !== 1) nextTrack(); };
+    window.onload = async () => {
+        const saved = localStorage.getItem('MP3_ELITE_STYLE');
+        if(saved) { 
+            const c = JSON.parse(saved); 
+            Object.keys(c).forEach(k => { 
+                updateStyle(k, c[k]); 
+                if(document.getElementById('in-'+k)) document.getElementById('in-'+k).value = c[k]; 
+            }); 
+        } else { updateStyle('accent', config.accent); }
+        const db = await openDB();
+        db.transaction("songs").objectStore("songs").getAll().onsuccess = (e) => {
+            e.target.result.forEach(item => { item.meta.url = URL.createObjectURL(item.data); playlist.push(item.meta); });
+            if(playlist.length) renderUI();
+        };
+        window.addEventListener('resize', checkMarquees);
+    };
+    
+    function updateClock() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        if (document.getElementById('fs-clock')) document.getElementById('fs-clock').innerText = `${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000); updateClock();
+</script>
+</body>
+</html>
