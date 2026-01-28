@@ -1,7 +1,7 @@
 // Fichier: sw.js (SERVICE WORKER COMPLET)
 
 // Version du cache. Changez ceci pour forcer la mise à jour des utilisateurs.
-const CACHE_NAME = 'radiolinky-cache-v1.0.0'; 
+const CACHE_NAME = 'radiolinky-cache-v1'; 
 const urlsToCache = [
   '/',
   '/index.html',
