@@ -258,7 +258,7 @@
 
     function loadSavedStyles() {
         const savedAccent = localStorage.getItem('ELITE_accent') || '#ffffff';
-        const savedViz = localStorage.getItem('ELITE_viz') || '#ffff00';
+        const savedViz = localStorage.getItem('ELITE_viz') || '#000000';
         updateStyle('accent', savedAccent);
         updateStyle('viz', savedViz);
         document.getElementById('accent-picker').value = savedAccent;
