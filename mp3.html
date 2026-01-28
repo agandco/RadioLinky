@@ -459,6 +459,9 @@
     }
     audio.onended = () => { if (loopMode !== 1) nextTrack(); };
     window.onload = async () => {
+        // Init Lucide immédiatement pour afficher l'icône paramètre même si vide
+        lucide.createIcons();
+
         const saved = localStorage.getItem('MP3_ELITE_STYLE');
         if(saved) { 
             const c = JSON.parse(saved); 
