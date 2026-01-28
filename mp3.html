@@ -63,7 +63,6 @@
         .no-scroll { padding-left: 0; animation: none; width: 100%; text-align: center; text-overflow: ellipsis; overflow: hidden; display: block; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-        /* Loader d'importation */
         #import-loader { display: none; margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); }
         .load-bar-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-top: 10px; }
         #load-bar-fill { width: 0%; height: 100%; background: #fff; transition: width 0.2s; }
@@ -453,6 +452,10 @@
         config[k] = v; 
         document.documentElement.style.setProperty(`--${k}`, v); 
         localStorage.setItem('MP3_ELITE_STYLE', JSON.stringify(config));
+        
+        const inputEl = document.getElementById('in-' + k);
+        if(inputEl) inputEl.value = v;
+
         if(k === 'accent') {
             const luminance = getLuminance(v);
             document.documentElement.style.setProperty('--contrast-text', luminance > 0.5 ? '#000' : '#fff');
@@ -490,8 +493,11 @@
         const saved = localStorage.getItem('MP3_ELITE_STYLE');
         if(saved) { 
             const c = JSON.parse(saved); 
-            Object.keys(c).forEach(k => { updateStyle(k, c[k]); if(document.getElementById('in-'+k)) document.getElementById('in-'+k).value = c[k]; }); 
-        } else { updateStyle('accent', config.accent); }
+            Object.keys(c).forEach(k => { updateStyle(k, c[k]); }); 
+        } else { 
+            updateStyle('accent', config.accent); 
+            updateStyle('viz', config.viz);
+        }
         const db = await openDB();
         db.transaction("songs").objectStore("songs").getAll().onsuccess = (e) => {
             e.target.result.forEach(item => { item.meta.url = URL.createObjectURL(item.data); playlist.push(item.meta); });
