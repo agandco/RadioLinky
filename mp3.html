@@ -259,7 +259,11 @@
             countTxt.innerText = `${done}/${files.length}`;
         }
         
-        setTimeout(() => { loader.style.display = 'none'; barFill.style.width = '0%'; }, 1000);
+        setTimeout(() => { 
+            loader.style.display = 'none'; 
+            barFill.style.width = '0%'; 
+            location.reload(); // Rafraîchissement automatique ici
+        }, 1000);
         renderUI();
     };
 
