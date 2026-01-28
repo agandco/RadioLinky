@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
     <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+
     <title>RADIOLINKY</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
@@ -56,7 +60,6 @@
         .menu-content { 
             display: none; 
             padding: 15px;
-            /* Retour à 2 colonnes pour plus d'espace */
             grid-template-columns: repeat(2, 1fr); 
             gap: 10px;
             background: #000;
@@ -75,21 +78,14 @@
             text-decoration: none;
             border-radius: 12px;
             font-weight: 900;
-            font-size: 0.75rem; /* Taille augmentée pour une meilleure lisibilité */
+            font-size: 0.75rem;
             border: 2px solid #fff;
             margin-left: 5px;
             margin-right: 5px;
         }
 
-        .nav-link i {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* Style spécial pour le bouton Don (optionnel, reste blanc/noir ici) */
-        .donate-link {
-            border-color: #fff;
-        }
+        .nav-link i { width: 20px; height: 20px; }
+        .donate-link { border-color: #fff; }
 
         .app-frame-container {
             width: 100%;
@@ -104,32 +100,31 @@
             display: block;
         }
         hr {
-    grid-column: span 2;
-    width: 100%;
-    border: none;
-    /* On passe de 0.2 à 0.5 pour l'opacité, ou blanc pur (#fff) */
-    border-top: 1px solid rgba(255, 255, 255, 0.5); 
-    margin: 10px 0; /* Un peu plus d'espace pour que ça respire */
-}
+            grid-column: span 2;
+            width: 100%;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.5); 
+            margin: 10px 0;
+        }
 
-small {
-    display: block; /* Pour qu'il prenne toute la ligne */
-    margin-top: 0px;
-    margin-bottom: 10px;
-    color: var(--accent);
-    opacity: 0.6;
-    letter-spacing: 1px;
-}
+        small {
+            display: block;
+            margin-top: 0px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            opacity: 0.6;
+            letter-spacing: 1px;
+        }
 
     </style>
 </head>
-    <body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
+<body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
         
-        <div id="pwa-install-container" style="display: none; position: fixed; top: 18px; right: 60px; z-index: 9999;">
-    <button id="pwa-install-btn" style="background: #fff; color: #000; border: 2px solid #fff; padding: 8px 15px; border-radius: 50px; font-weight: 900; font-family: 'Montserrat', sans-serif; font-size: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <i data-lucide="download" style="width:14px; height:14px;"></i> INSTALLER
-    </button>
-</div>
+    <div id="pwa-install-container" style="display: none; position: fixed; top: 18px; right: 60px; z-index: 9999;">
+        <button id="pwa-install-btn" style="background: #fff; color: #000; border: 2px solid #fff; padding: 8px 15px; border-radius: 50px; font-weight: 900; font-family: 'Montserrat', sans-serif; font-size: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <i data-lucide="download" style="width:14px; height:14px;"></i> INSTALLER
+        </button>
+    </div>
 
     <div class="menu-container" id="header-menu">
         <div class="cat-header" onclick="toggleMenu()">
@@ -168,6 +163,13 @@ small {
     <script>
         lucide.createIcons();
 
+        // ÉTAPE 2 : Enregistrement du Service Worker (CRUCIAL pour PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+            });
+        }
+
         function toggleMenu() {
             const content = document.getElementById('menu-links');
             const icon = document.getElementById('menu-icon');
@@ -183,9 +185,7 @@ small {
             container.style.height = `calc(100dvh - ${headerHeight}px)`;
         }
 
-        function handleNav() {
-            toggleMenu();
-        }
+        function handleNav() { toggleMenu(); }
 
         window.addEventListener('resize', updateFrameHeight);
         window.addEventListener('load', updateFrameHeight);
@@ -194,66 +194,57 @@ small {
         let wakeLock = null;
         const requestWakeLock = async () => {
             try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                }
+                if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); }
             } catch (err) {}
         };
         requestWakeLock();
         document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                requestWakeLock();
-            }
+            if (wakeLock !== null && document.visibilityState === 'visible') { requestWakeLock(); }
         });
         
+        // Logique d'installation
         let deferredPrompt;
-    const installContainer = document.getElementById('pwa-install-container');
-    const installBtn = document.getElementById('pwa-install-btn');
+        const installContainer = document.getElementById('pwa-install-container');
+        const installBtn = document.getElementById('pwa-install-btn');
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        // On n'affiche le bouton que si on n'est pas déjà en mode standalone
-        if (!window.matchMedia('(display-mode: standalone)').matches) {
-            installContainer.style.display = 'block';
-        }
-    });
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                installContainer.style.display = 'block';
+            }
+        });
 
-    installBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') { installContainer.style.display = 'none'; }
+            deferredPrompt = null;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installContainer.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             installContainer.style.display = 'none';
         }
-        deferredPrompt = null;
-    });
-
-    window.addEventListener('appinstalled', () => {
-        installContainer.style.display = 'none';
-        deferredPrompt = null;
-    });
-
-    // Vérification initiale
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-        installContainer.style.display = 'none';
-    }
-    
-const shareLockObserver = new MutationObserver(() => {
-    if (typeof state !== 'undefined' && state.current && state.current[state.idx]) {
-        const t = state.current[state.idx];
-        if (t && t.isMP3) {
-            const shareBtn = document.getElementById('btn-share-stream');
-            if (shareBtn && shareBtn.style.display !== 'none') {
-                shareBtn.style.setProperty('display', 'none', 'important');
-                shareBtn.classList.add('hidden');
-            }
-        }
-    }
-});
-
-shareLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
         
+        const shareLockObserver = new MutationObserver(() => {
+            if (typeof state !== 'undefined' && state.current && state.current[state.idx]) {
+                const t = state.current[state.idx];
+                if (t && t.isMP3) {
+                    const shareBtn = document.getElementById('btn-share-stream');
+                    if (shareBtn && shareBtn.style.display !== 'none') {
+                        shareBtn.style.setProperty('display', 'none', 'important');
+                        shareBtn.classList.add('hidden');
+                    }
+                }
+            }
+        });
+        shareLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
     </script>
 </body>
 </html>
