@@ -115,6 +115,7 @@
             color: var(--bg);
             text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff;
             padding: 0 2px;
+            letter-spacing: 2px;
         }
         * { text-transform: uppercase; }
         #fullscreen-area { position: absolute; top:0; left:0; width:100%; height:85%; z-index: 5; }
@@ -125,7 +126,7 @@
 
 <div class="app-container" id="main-scroll">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-        <h1 style="font-weight:900; margin:0;">MP3 <span class="elite-text">ELITE</span></h1>
+    <h1 style="font-weight:900; margin:0;">MP3 <span class="elite-text">ELITE</span></h1>
         <i data-lucide="settings" onclick="toggleSettings(true)" style="cursor:pointer;"></i>
     </div>
     <button onclick="document.getElementById('mp3-input').click()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid var(--contrast-border); margin-bottom:20px;">+ IMPORTER UN DOSSIER</button>
