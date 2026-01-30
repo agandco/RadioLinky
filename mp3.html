@@ -380,7 +380,7 @@
         analyser.getByteFrequencyData(dataArray);
         const canvas = document.getElementById('fs-viz'); const ctx = canvas.getContext('2d');
         const cCan = document.getElementById('viz-circle'); const cCtx = cCan.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = 200;
+        canvas.width = window.innerWidth; canvas.height = 150;
         ctx.clearRect(0, 0, canvas.width, canvas.height); cCtx.clearRect(0, 0, 340, 340);
         
         const themeColor = config.viz; const secondaryColor = "#ffffff";
@@ -399,7 +399,7 @@
                     const actualBarWidth = barWidth - 4; const barY = canvas.height - barHeight;
                     let grad = ctx.createLinearGradient(0, canvas.height, 0, barY);
                     grad.addColorStop(0, "rgba(0,0,0,0.2)"); grad.addColorStop(0.5, themeColor); grad.addColorStop(1, secondaryColor);
-                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(x, barY, actualBarWidth, barHeight, [15, 15, 0, 0]); ctx.fill();
+                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(x, barY, actualBarWidth, barHeight, [340, 340, 0, 0]); ctx.fill();
                     ctx.fillStyle = "#ff0000"; ctx.beginPath(); ctx.arc(x + (actualBarWidth/2), barY + 1, 1.2, 0, Math.PI*2); ctx.fill();
                 }
                 x += barWidth;
@@ -407,14 +407,14 @@
         }
 
         if(vizMode === 'circle' || vizMode === 'both') {
-            cCtx.save(); cCtx.translate(170, 170); const bars = 120; const radius = 108; 
+            cCtx.save(); cCtx.translate(170, 170); const bars = 150; const radius = 108; 
             for (let i = 0; i < bars; i++) {
-                const angle = i * ((Math.PI * 2) / bars); const dataIdx = Math.abs((i % 80) - 40);
+                const angle = i * ((Math.PI * 2) / bars); const dataIdx = Math.abs((i % 40) - 80);
                 const val = Math.pow(dataArray[dataIdx] / 255, 1.2) * 255; const h = (val / 255) * 65;
                 const xEnd = Math.cos(angle) * (radius + h); const yEnd = Math.sin(angle) * (radius + h);
                 let grad = cCtx.createRadialGradient(0, 0, radius, 0, 0, radius + h);
                 grad.addColorStop(0, "rgba(0,0,0,0.1)"); grad.addColorStop(0.5, themeColor); grad.addColorStop(1, secondaryColor);
-                cCtx.strokeStyle = grad; cCtx.lineWidth = 2.8; cCtx.lineCap = "round";
+                cCtx.strokeStyle = grad; cCtx.lineWidth = 2.3; cCtx.lineCap = "round";
                 cCtx.beginPath(); cCtx.moveTo(Math.cos(angle)*radius, Math.sin(angle)*radius); cCtx.lineTo(xEnd, yEnd); cCtx.stroke();
                 if(h > 2) { cCtx.fillStyle = "#ff0000"; cCtx.beginPath(); cCtx.arc(xEnd, yEnd, 1.3, 0, Math.PI*2); cCtx.fill(); }
             }
