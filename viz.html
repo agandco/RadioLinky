@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>RADIOLINKY</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #00f3ff; --bg: #050505; --txt: #ffffff; --viz-secondary: #ffffff; }
+        
+        /* Gestion du mode clair */
+        body.light-mode { 
+            --bg: #ffffff; 
+            --txt: #000000;
+            --viz-secondary: #000000;
+        }
+        body.light-mode #bg-layer {
+            background: linear-gradient(to bottom, var(--primary) 0%, #ffffff 100%);
+            opacity: 0.25;
+        }
+
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            text-transform: uppercase; }
+            
+        input, button, i, .art-container, .close-area {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body { 
+            background-color: var(--bg); margin: 0; height: 100vh; width: 100vw; 
+            display: flex; flex-direction: column; align-items: center; 
+            overflow: hidden; color: var(--txt); font-family: 'Roboto', sans-serif; 
+            transition: background-color 0.3s ease;
+        }
+        #bg-layer { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom, var(--primary) 0%, #050505 100%); opacity: 0.15; pointer-events: none; }
+        #fs-viz { position: absolute; bottom: 0; left: 0; width: 100%; height: 35%; z-index: 1; pointer-events: none; opacity: 0.8; }
+        #fullscreen-area { position: absolute; top:0; left:0; width:100%; height:85%; z-index: 5; }
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            width: 100%; z-index: 10; padding-top: 60px; pointer-events: none;
+        }
+        .art-container, .controls-main, #fs-title-container { pointer-events: auto; }
+        .art-container { position: relative; cursor: pointer; margin-bottom: 30px; }
+        #fs-art { 
+            width: 60vw; max-width: 210px; height: 60vw; max-height: 210px; margin-top:30px;
+            object-fit: cover; border-radius: 50%; border: 5px solid var(--primary); 
+            background: #222; box-sizing: border-box;
+            transition: transform 0.05s ease-out;
+            box-shadow: 0 0 15px var(--primary), inset 0 0 20px rgba(255,255,255,0.2);
+        }
+        #fs-title-container { width: 90%; height: 50px; overflow: hidden; display: flex; align-items: center; margin-bottom: 50px; margin-top: 25px;}
+        #fs-title { font-size: 1.0rem; text-align: center; width: 100%; white-space: nowrap; font-weight: 700; font-family: 'Orbitron'; color: var(--primary); text-shadow: 0 0 8px var(--primary); }
+        .controls-main { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 0px; }
+        .btn-action { background: none; border: none; color: #777; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.7rem; font-family: 'Orbitron'; }
+        .btn-action.active { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+        .btn-play { color: var(--primary); }
+        .close-area {
+            position: absolute; bottom: 25px; left: 0; width: 100%; height: 15%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; cursor: pointer; background: transparent;
+        }
+        .close-label { color: var(--primary); font-size: 0.8rem; font-family: 'Orbitron'; margin-top: 5px; }
+        .is-spinning { animation: spin 4s linear infinite; }
+        .is-paused { animation-play-state: paused !important; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .scrolling-text { display: inline-block; padding-left: 100%; animation: marquee 12s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        #file-input { display: none; }
+    </style>
+</head>
+<body>
+    <div id="bg-layer"></div>
+    <canvas id="fs-viz"></canvas>
+    <div id="fullscreen-area" onclick="requestFullScreen()"></div>
+    <div class="main-content">
+        <div class="art-container" onclick="document.getElementById('file-input').click();">
+            <img id="fs-art" src="https://i.imgur.com/K8vR7ex.png" class="is-spinning is-paused">
+            <input type="file" id="file-input" accept="audio/*">
+        </div>
+        <div id="fs-title-container">
+        <h2 id="fs-title" class="scrolling-text">CLIQUEZ SUR LE DISQUE POUR SÉLECTIONNER UN TITRE...<br>CLIQUEZ SUR LA PAGE POUR PLEIN ECRAN... MONTEZ LE SON</h2>
+        </div>
+        <div class="controls-main">
+            <button class="btn-action btn-play" onclick="toggleAudio()">
+                <i id="fs-play-ico" data-lucide="play" fill="currentColor" size="70"></i>
+            </button>
+        </div>
+    </div>
+    <div class="close-area" onclick="closeViz()">
+        <i data-lucide="chevron-down" size="40" color="var(--primary)"></i>
+        <span class="close-label"></span>
+    </div>
+<script>
+    const themeColor = localStorage.getItem('rl_color_v12') || '#00f3ff';
+    document.documentElement.style.setProperty('--primary', themeColor);
+    
+    // Application du mode clair si détecté
+    if(localStorage.getItem('rl_theme_mode') === 'light') {
+        document.body.classList.add('light-mode');
+    }
+
+    const audio = new Audio();
+    audio.crossOrigin = "anonymous";
+    let audioCtx, analyser, source, dataArray;
+    const defaultArt = "https://i.imgur.com/K8vR7ex.png";
+
+    function initAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 128;
+            source = audioCtx.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            draw();
+        }
+    }
+
+    function requestFullScreen() {
+        const docEl = document.documentElement;
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        if (req) req.call(docEl).catch(() => {});
+    }
+
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            localStorage.setItem('viz_mode', 'mp3');
+            if (audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
+            audio.src = URL.createObjectURL(file);
+            document.getElementById('fs-title').innerText = file.name.replace(/\.[^/.]+$/, "").toUpperCase();
+            jsmediatags.read(file, {
+                onSuccess: function(tag) {
+                    const data = tag.tags.picture;
+                    if (data) {
+                        let base64String = "";
+                        for (let i = 0; i < data.data.length; i++) { base64String += String.fromCharCode(data.data[i]); }
+                        document.getElementById('fs-art').src = "data:" + data.format + ";base64," + window.btoa(base64String);
+                    } else { document.getElementById('fs-art').src = defaultArt; }
+                },
+                onError: function() { document.getElementById('fs-art').src = defaultArt; }
+            });
+            audio.play().then(() => {
+                initAudioContext();
+                document.getElementById('fs-art').classList.remove('is-paused');
+                updateIcon('pause');
+            });
+        }
+    });
+
+    function toggleAudio() {
+        if (!audio.src) return;
+        initAudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audio.paused) {
+            audio.play();
+            updateIcon('pause');
+            document.getElementById('fs-art').classList.remove('is-paused');
+        } else {
+            audio.pause();
+            updateIcon('play');
+            document.getElementById('fs-art').classList.add('is-paused');
+        }
+    }
+
+    function updateIcon(name) {
+        const ico = document.getElementById('fs-play-ico');
+        if(ico) { ico.setAttribute('data-lucide', name); lucide.createIcons(); }
+    }
+
+    function draw() {
+        requestAnimationFrame(draw);
+        if (!analyser) return;
+        analyser.getByteFrequencyData(dataArray);
+        const canvas = document.getElementById('fs-viz');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = canvas.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Détection de la couleur secondaire (blanc ou noir) selon le mode
+        const isLight = document.body.classList.contains('light-mode');
+        const secondaryColor = isLight ? "#000000" : "#ffffff";
+
+        let lowFreqSum = 0;
+        for(let j = 0; j < 4; j++) { lowFreqSum += dataArray[j]; }
+        let lowFreqAvg = lowFreqSum / 4;
+        let scaleValue = 1 + (lowFreqAvg / 255) * 0.25;
+        const artImg = document.getElementById('fs-art');
+        const blurPrimary = 1 + (lowFreqAvg / 20);
+        const blurSecondary = 2 + (lowFreqAvg / 10);
+        
+        artImg.style.transform = `scale(${scaleValue})`;
+        artImg.style.boxShadow = `
+            0 0 ${blurPrimary}px var(--primary), 
+            0 0 ${blurSecondary}px ${secondaryColor}, 
+            0 0 10px rgba(0,0,0,0.5),
+            inset 5px 5px 15px rgba(255,255,255,0.3),
+            inset -5px -5px 15px rgba(0,0,0,0.2)
+        `;
+
+        const barWidth = (canvas.width / dataArray.length) * 1.45;
+        let x = 3;
+        for (let i = 0; i < dataArray.length; i++) {
+            const barHeight = (dataArray[i] / 255) * canvas.height * 1;
+            if (barHeight > 0) {
+                const actualBarWidth = barWidth - 5;
+                const barY = canvas.height - barHeight;
+                let gradient = ctx.createLinearGradient(0, canvas.height, 0, barY);
+                gradient.addColorStop(0, "rgba(0,0,0,0.5)"); 
+                gradient.addColorStop(0.5, themeColor);
+                gradient.addColorStop(1, secondaryColor);
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.roundRect(x, barY, actualBarWidth, barHeight, [50, 50, 50, 50]);
+                ctx.fill();
+                const dotRadius = Math.max(actualBarWidth / 5, 2); 
+                const dotX = x + (actualBarWidth / 2);
+                const dotY = barY + (actualBarWidth / 2);
+                ctx.fillStyle = "#ff0000";
+                ctx.beginPath();
+                ctx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            x += barWidth;
+        }
+    }
+
+    function closeViz() {
+    audio.pause();
+    
+    // Quitter le plein écran
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) exit.call(document).catch(() => {});
+    }
+
+    const mode = localStorage.getItem('viz_mode') || 'radio';
+
+    // On envoie d'abord le message simple (pour être sûr que le parent ferme la fenêtre)
+    window.parent.postMessage('close-visualizer', '*');
+
+    // On envoie ensuite l'ordre de rafraîchir l'interface
+    window.parent.postMessage({action: 'close-visualizer', mode: mode}, '*');
+    window.parent.postMessage({action: 'refresh-ui'}, '*');
+}
+
+
+    window.onload = () => {
+        lucide.createIcons();
+        document.getElementById('fs-art').src = localStorage.getItem('viz_img') || defaultArt;
+        const sUrl = localStorage.getItem('viz_url');
+        if (sUrl && !sUrl.startsWith('blob:')) {
+            localStorage.setItem('viz_mode', 'radio');
+            audio.src = sUrl;
+            document.getElementById('fs-title').innerText = (localStorage.getItem('viz_name') || "RADIO").toUpperCase();
+            audio.play().then(() => {
+                initAudioContext();
+                document.getElementById('fs-art').classList.remove('is-paused');
+                updateIcon('pause');
+            }).catch(() => {});
+        }
+    };
+</script>
+</body>
+</html>
