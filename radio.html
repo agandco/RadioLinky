@@ -648,51 +648,70 @@
     }
 
     function draw() {
-        requestAnimationFrame(draw); if (!analyser) return;
-        analyser.getByteFrequencyData(dataArray);
-        const canvas = document.getElementById('fs-viz'); const ctx = canvas.getContext('2d');
-        const cCan = document.getElementById('viz-circle'); const cCtx = cCan.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = 150;
-        ctx.clearRect(0, 0, canvas.width, canvas.height); cCtx.clearRect(0, 0, 340, 340);
-        
-        const themeColor = config.viz; const secondaryColor = "#ffffff";
-        let lowFreqSum = 0; for(let j = 0; j < 4; j++) { lowFreqSum += dataArray[j]; }
-        let lowFreqAvg = lowFreqSum / 4;
-        let scaleValue = 1 + (lowFreqAvg / 255) * 0.25;
-        document.getElementById('fs-art').style.transform = `scale(${scaleValue})`;
-        document.getElementById('fs-art').style.boxShadow = `0 0 ${1 + (lowFreqAvg / 20)}px var(--accent), 0 0 ${2 + (lowFreqAvg / 10)}px ${secondaryColor}`;
+    requestAnimationFrame(draw); if (!analyser) return;
+    analyser.getByteFrequencyData(dataArray);
+    const canvas = document.getElementById('fs-viz'); const ctx = canvas.getContext('2d');
+    const cCan = document.getElementById('viz-circle'); const cCtx = cCan.getContext('2d');
+    
+    // Optimisation : On ne change la taille que si nécessaire
+    if (canvas.width !== window.innerWidth) {
+        canvas.width = window.innerWidth;
+        canvas.height = 150;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    cCtx.clearRect(0, 0, 340, 340);
+    
+    const themeColor = config.viz; const secondaryColor = "#ffffff";
+    
+    // Animation de l'image (Scale) - On garde ton calcul
+    let lowFreqSum = 0; for(let j = 0; j < 4; j++) { lowFreqSum += dataArray[j]; }
+    let lowFreqAvg = lowFreqSum / 4;
+    let scaleValue = 1 + (lowFreqAvg / 255) * 0.25;
+    document.getElementById('fs-art').style.transform = `scale(${scaleValue})`;
+    document.getElementById('fs-art').style.boxShadow = `0 0 ${1 + (lowFreqAvg / 20)}px var(--accent), 0 0 ${2 + (lowFreqAvg / 10)}px ${secondaryColor}`;
 
-        if(vizMode === 'bars' || vizMode === 'both') {
-            const bufferLength = 64; const barWidth = canvas.width / bufferLength; let x = 0;
-            for (let i = 0; i < bufferLength; i++) {
-                const valRaw = dataArray[i * 2]; const val = Math.pow(valRaw / 255, 1.1) * 255;
-                const barHeight = (val / 255) * canvas.height;
-                if (barHeight > 0) {
-                    const actualBarWidth = barWidth - 4; const barY = canvas.height - barHeight;
-                    let grad = ctx.createLinearGradient(0, canvas.height, 0, barY);
-                    grad.addColorStop(0, "rgba(0,0,0,0.2)"); grad.addColorStop(0.5, themeColor); grad.addColorStop(1, secondaryColor);
-                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(x, barY, actualBarWidth, barHeight, [0, 0, 0, 0]); ctx.fill();
-                    ctx.fillStyle = "#ff0000"; ctx.beginPath(); ctx.arc(x + (actualBarWidth/2), barY + 1, 1.4, 0, Math.PI*2); ctx.fill();
-                }
-                x += barWidth;
+    // --- VISUALISEUR EN BARRES (Normalisé) ---
+    if(vizMode === 'bars' || vizMode === 'both') {
+        const bufferLength = 64; const barWidth = canvas.width / bufferLength; let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            const valRaw = dataArray[i * 2]; 
+            const val = Math.pow(valRaw / 255, 1.1) * 255;
+            const barHeight = (val / 255) * canvas.height;
+            if (barHeight > 0) {
+                const actualBarWidth = barWidth - 4; const barY = canvas.height - barHeight;
+                let grad = ctx.createLinearGradient(0, canvas.height, 0, barY);
+                grad.addColorStop(0, "rgba(0,0,0,0.2)"); grad.addColorStop(0.5, themeColor); grad.addColorStop(1, secondaryColor);
+                ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(x, barY, actualBarWidth, barHeight, [0, 0, 0, 0]); ctx.fill();
+                ctx.fillStyle = "#ff0000"; ctx.beginPath(); ctx.arc(x + (actualBarWidth/2), barY + 1, 1.4, 0, Math.PI*2); ctx.fill();
             }
-        }
-
-        if(vizMode === 'circle' || vizMode === 'both') {
-            cCtx.save(); cCtx.translate(170, 170); const bars = 150; const radius = 108; 
-            for (let i = 0; i < bars; i++) {
-                const angle = i * ((Math.PI * 2) / bars); const dataIdx = Math.abs((i % 20) - 100);
-                const val = Math.pow(dataArray[dataIdx] / 255, 1.1) * 255; const h = (val / 190) * 65;
-                const xEnd = Math.cos(angle) * (radius + h); const yEnd = Math.sin(angle) * (radius + h);
-                let grad = cCtx.createRadialGradient(0, 0, radius, 0, 0, radius + h);
-                grad.addColorStop(0, "rgba(0,0,0,0.1)"); grad.addColorStop(0.3, themeColor); grad.addColorStop(1, secondaryColor);
-                cCtx.strokeStyle = grad; cCtx.lineWidth = 2.3; cCtx.lineCap = "round";
-                cCtx.beginPath(); cCtx.moveTo(Math.cos(angle)*radius, Math.sin(angle)*radius); cCtx.lineTo(xEnd, yEnd); cCtx.stroke();
-                if(h > 2) { cCtx.fillStyle = "#ff0000"; cCtx.beginPath(); cCtx.arc(xEnd, yEnd,1.5, 0, Math.PI*2); cCtx.fill(); }
-            }
-            cCtx.restore();
+            x += barWidth;
         }
     }
+
+    // --- VISUALISEUR CIRCULAIRE (TES RÉGLAGES D'ORIGINE) ---
+    if(vizMode === 'circle' || vizMode === 'both') {
+        cCtx.save(); cCtx.translate(170, 170); const bars = 150; const radius = 108; 
+        for (let i = 0; i < bars; i++) {
+            const angle = i * ((Math.PI * 2) / bars); 
+            
+            // ON GARDE TON CALCUL EXACT ICI POUR LA RÉGULARITÉ
+            const dataIdx = Math.abs((i % 20) - 100); 
+            
+            const val = Math.pow(dataArray[dataIdx] / 255, 1.1) * 255; 
+            const h = (val / 190) * 65; 
+            
+            const xEnd = Math.cos(angle) * (radius + h); const yEnd = Math.sin(angle) * (radius + h);
+            let grad = cCtx.createRadialGradient(0, 0, radius, 0, 0, radius + h);
+            grad.addColorStop(0, "rgba(0,0,0,0.1)"); grad.addColorStop(0.3, themeColor); grad.addColorStop(1, secondaryColor);
+            cCtx.strokeStyle = grad; cCtx.lineWidth = 2.3; cCtx.lineCap = "round";
+            cCtx.beginPath(); cCtx.moveTo(Math.cos(angle)*radius, Math.sin(angle)*radius); cCtx.lineTo(xEnd, yEnd); cCtx.stroke();
+            if(h > 2) { cCtx.fillStyle = "#ff0000"; cCtx.beginPath(); cCtx.arc(xEnd, yEnd,1.5, 0, Math.PI*2); cCtx.fill(); }
+        }
+        cCtx.restore();
+    }
+}
+
 
     function requestFullScreen() {
         const docEl = document.documentElement;
