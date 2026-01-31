@@ -605,13 +605,17 @@
     }
 
     async function exportFavs() {
-        const db = await openDB();
-        db.transaction("favs").objectStore("favs").getAll().onsuccess = (e) => {
-            const blob = new Blob([JSON.stringify(e.target.result, null, 2)], {type: "application/json"});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob); a.download = "radiolinky_favs.json"; a.click();
-        };
-    }
+    const db = await openDB();
+    db.transaction("favs").objectStore("favs").getAll().onsuccess = (e) => {
+        const blob = new Blob([JSON.stringify(e.target.result, null, 2)], {type: "application/json"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        // Utilise bien le signe ` (AltGr + 7) pour que la date fonctionne
+        a.download = `RADIOLINKY_RADIOS_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    };
+}
+
 
     function importFavs(input) {
         if(!input.files[0]) return;

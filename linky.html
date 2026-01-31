@@ -373,13 +373,17 @@
     function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
 
     async function exportData() {
-        const db = await openDB();
-        db.transaction("links").objectStore("links").getAll().onsuccess = (e) => {
-            const blob = new Blob([JSON.stringify(e.target.result, null, 2)], {type: "application/json"});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob); a.download = "linky_backup.json"; a.click();
-        };
-    }
+    const db = await openDB();
+    db.transaction("links").objectStore("links").getAll().onsuccess = (e) => {
+        const blob = new Blob([JSON.stringify(e.target.result, null, 2)], {type: "application/json"});
+        const a = document.createElement('a');
+        // Ligne ajoutée ci-dessous pour lier le contenu au téléchargement
+        a.href = URL.createObjectURL(blob); 
+        a.download = `RADIOLINKY_LIENS_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    };
+}
+
 
     function importData(input) {
         const reader = new FileReader();
