@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
+    <title>NOTE ÉLITE - GESTIONNAIRE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #ffffff; 
+            --bg: #000000; 
+            --text: #ffffff; 
+            --border: #ffffff; 
+            --contrast-text: #000000; 
+            --live-border: rgba(255,255,255,0.3);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; text-transform: uppercase; }
+        
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+        .app-container { min-height: 100vh; padding: 20px 15px 100px; width: 100%; scroll-behavior: smooth; }
+        
+        .search-box { position: relative; margin-bottom: 10px; }
+        .search-box input { width: 100%; padding: 18px 20px; border-radius: 18px; border: 2px solid #fff; background: rgba(255,255,255,0.1); color: #fff; font-family: inherit; font-weight: 700; font-size: 1rem; user-select: text; -webkit-user-select: text; }
+
+        .info-tip { font-size: 0.65rem; font-weight: 700; opacity: 0.7; margin-top: 20px; margin-bottom: 20px; text-align: center; letter-spacing: 1px; }
+
+        .category-group { background: rgba(255,255,255,0.05); border-radius: 18px; margin-bottom: 12px; border: 2px solid #fff; overflow: hidden; }
+        .cat-header { padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+
+        .note-card { 
+            background: var(--note-bg, rgba(255,255,255,0.1));
+            color: var(--note-text, #fff);
+            border-radius: 20px; padding: 15px; border: 2px solid #fff; height: 180px; 
+            display: flex; flex-direction: column; position: relative;
+            text-decoration: none; transition: transform 0.2s;
+            overflow: hidden;
+        }
+        
+        .note-content { 
+            flex: 1; font-size: 0.75rem; font-weight: 600; text-transform: none; 
+            overflow: hidden; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;
+            margin-top: 25px; line-height: 1.4;
+        }
+        
+        .title-box { width: 100%; overflow: hidden; white-space: nowrap; margin-bottom: 5px; }
+        .marquee { font-weight: 900; font-size: 0.85rem; display: block; }
+
+        #edit-panel, #settings-panel { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 3000; 
+            display: none; padding: 30px; overflow-y: auto; 
+            height: 100dvh;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 900; margin-bottom: 8px; font-size: 0.8rem; }
+        
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 15px; border-radius: 12px; 
+            border: 2px solid var(--live-border); 
+            background: rgba(0,0,0,0.05); color: inherit; font-family: inherit; 
+            user-select: text; -webkit-user-select: text; 
+        }
+
+        #live-title { 
+            width: 100%; background: transparent; border: none; color: inherit; 
+            font-family: inherit; font-weight: 900; font-size: 2.2rem; outline: none;
+            margin-bottom: 20px; padding: 0;
+            user-select: text; -webkit-user-select: text;
+        }
+        #live-content { 
+            width: 100%; background: transparent; border: none; color: inherit; 
+            font-family: inherit; font-size: 1.2rem; line-height: 1.6; outline: none;
+            resize: none; min-height: 50vh; text-transform: none;
+            user-select: text; -webkit-user-select: text;
+        }
+
+        .elite-text { 
+            color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; 
+            padding: 0 4px; letter-spacing: 2px;
+        }
+        
+        .btn-add { width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid #fff; margin-bottom:20px; cursor: pointer; }
+        .color-row { background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .sortable-ghost { opacity: 0.3; transform: scale(0.9); }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div class="app-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h1 style="font-weight:900; margin:0;">NOTE <span class="elite-text">ELITE</span></h1>
+        <div style="display:flex; gap:15px;">
+            <i data-lucide="move" id="edit-mode-btn" onclick="toggleEditMode()" style="cursor:pointer;"></i>
+            <i data-lucide="settings" onclick="toggleSettings(true)" style="cursor:pointer;"></i>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="note-q" placeholder="Chercher une note..." oninput="filterNotes()">
+    </div>
+    
+    <div class="info-tip" id="info-text">ACTIVER LE MODE DÉPLACEMENT (FLÈCHES)</div>
+
+    <button class="btn-add" onclick="openNote(null)">+ AJOUTER UNE NOTE</button>
+
+    <div id="notes-accordion-container"></div>
+</div>
+
+<div id="edit-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div style="display:flex; gap:20px; align-items:center;">
+             <i data-lucide="pen-line" id="pen-edit-icon" onclick="toggleEditor(true)" style="cursor:pointer; display:none;"></i>
+             <i data-lucide="eye" id="eye-view-icon" onclick="toggleEditor(false)" style="cursor:pointer; display:none;"></i>
+             <h2 id="panel-title" style="font-weight:900; margin:0; font-size: 0.7rem; opacity: 0.5;"></h2>
+        </div>
+        <i data-lucide="x" onclick="closeEditForm()" style="cursor:pointer;"></i>
+    </div>
+    
+    <input type="hidden" id="edit-id">
+
+    <div id="view-mode-container">
+        <input type="text" id="live-title" placeholder="TITRE" oninput="autoSave()">
+        <textarea id="live-content" placeholder="ÉCRIVEZ ICI..." oninput="autoSave()"></textarea>
+    </div>
+    
+    <div id="edit-mode-container" style="display:none;">
+        <div class="form-group"><label>CATÉGORIE</label>
+            <select id="f-cat-select" onchange="checkNewCat(this.value); autoSave();"></select>
+            <input type="text" id="f-cat-new" placeholder="NOM DE LA CATÉGORIE" style="display:none; margin-top:10px;" oninput="autoSave()">
+        </div>
+        <div class="form-group">
+            <label>COULEUR DE LA NOTE</label>
+            <input type="color" id="f-color" value="#1a1a1a" oninput="applyLiveColor(this.value); autoSave();">
+        </div>
+        <button id="btn-delete" onclick="deleteNote()" style="display:none; width:100%; background:#ff4444; color:#fff; padding:15px; border-radius:15px; font-weight:900; border:none; margin-top:5px;">SUPPRIMER DÉFINITIVEMENT</button>
+    </div>
+</div>
+
+<div id="settings-panel">
+    <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
+        <h2 style="font-weight:900; margin:0;">PARAMÈTRES</h2>
+        <i data-lucide="x" onclick="toggleSettings(false)" style="cursor:pointer;"></i>
+    </div>
+    <div class="color-row">
+        <label style="font-weight:900;">COULEUR ACCENT</label>
+        <input type="color" id="accent-picker" oninput="updateStyle('accent', this.value)">
+    </div>
+    <button onclick="exportData()" style="width:100%; padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none; margin-bottom:10px;">SAUVEGARDER</button>
+    <button onclick="document.getElementById('import-input').click()" style="width:100%; padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none; margin-bottom:10px;">IMPORTER</button>
+    
+            <div style="font-size: 0.65rem; font-weight: 700; opacity: 0.6; text-align: center; margin: 15px 0 25px; line-height: 1.4; letter-spacing: 1px;">
+        PENSEZ À FAIRE UNE SAUVEGARDE DANS LES PARAMÈTRES DE TEMPS EN TEMPS POUR GARDER UNE COPIE DE VOS DONNÉES.
+    </div>
+
+    <button onclick="clearDatabase()" style="width:100%; padding:15px; border-radius:12px; background:#ff4444; color:#fff; font-weight:800; border:none;">TOUT EFFACER</button>
+    <input type="file" id="import-input" hidden onchange="importData(this)">
+</div>
+
+<script>
+    let notes = [];
+    let isEditMode = false;
+    let saveTimeout;
+    const dbName = "NOTES_ELITE_DB";
+    let pressTimer;
+
+    window.visualViewport.addEventListener('resize', () => {
+        const panel = document.getElementById('edit-panel');
+        if(panel.style.display === 'block') {
+            panel.style.height = window.visualViewport.height + 'px';
+            window.scrollTo(0, 0);
+            if (document.activeElement.tagName === 'TEXTAREA') {
+                setTimeout(() => {
+                    document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        }
+    });
+
+    function getLuminance(hex) {
+        const rgb = hex.replace(/^#/, '').match(/.{2}/g).map(x => parseInt(x, 16) / 255);
+        const [r, g, b] = rgb.map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function updateStyle(k, v) {
+        document.documentElement.style.setProperty(`--${k}`, v);
+        localStorage.setItem(`NOTES_${k}`, v);
+        if (k === 'accent') {
+            const lum = getLuminance(v);
+            document.documentElement.style.setProperty('--contrast-text', lum > 0.5 ? '#000' : '#fff');
+        }
+    }
+
+    function applyLiveColor(hex) {
+        const panel = document.getElementById('edit-panel');
+        panel.style.background = hex;
+        const lum = getLuminance(hex);
+        const textColor = lum > 0.5 ? '#000000' : '#ffffff';
+        const borderColor = lum > 0.5 ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)';
+        panel.style.color = textColor;
+        document.documentElement.style.setProperty('--live-border', borderColor);
+    }
+
+    function loadSavedStyles() {
+        const savedAccent = localStorage.getItem('NOTES_accent') || '#ffffff';
+        updateStyle('accent', savedAccent);
+        document.getElementById('accent-picker').value = savedAccent;
+    }
+
+    const openDB = () => new Promise(res => {
+        let req = indexedDB.open(dbName, 1);
+        req.onupgradeneeded = e => { 
+            let db = e.target.result;
+            db.createObjectStore("notes", {keyPath: "id", autoIncrement: true}); 
+        };
+        req.onsuccess = e => res(e.target.result);
+    });
+
+    async function loadNotes() {
+        const db = await openDB();
+        db.transaction("notes").objectStore("notes").getAll().onsuccess = (e) => {
+            notes = e.target.result;
+            renderNotes();
+        };
+    }
+
+    function handleLongPress(catName) {
+        const newCatName = prompt("RENOMMER LA CATÉGORIE :", catName);
+        if (newCatName && newCatName.trim() !== "" && newCatName.toUpperCase() !== catName.toUpperCase()) {
+            renameCategoryInDB(catName, newCatName.trim().toUpperCase());
+        }
+    }
+
+    async function renameCategoryInDB(oldCat, newCat) {
+        const db = await openDB();
+        const tx = db.transaction("notes", "readwrite");
+        const store = tx.objectStore("notes");
+        notes.forEach(n => {
+            if ((n.cat || 'DIVERS') === oldCat) {
+                n.cat = newCat;
+                store.put(n);
+            }
+        });
+        tx.oncomplete = () => { loadNotes(); };
+    }
+
+    function renderNotes(filter = "") {
+        const container = document.getElementById('notes-accordion-container');
+        container.innerHTML = "";
+        let filtered = notes.filter(n => n.title.toLowerCase().includes(filter.toLowerCase()) || n.content.toLowerCase().includes(filter.toLowerCase()));
+        const cats = [...new Set(filtered.map(n => n.cat || 'DIVERS'))].sort();
+
+        cats.forEach(cat => {
+            const group = document.createElement('div');
+            group.className = "category-group";
+            const catNotes = filtered.filter(n => (n.cat || 'DIVERS') === cat).sort((a,b) => (a.order || 0) - (b.order || 0));
+            
+            const header = document.createElement('div');
+            header.className = "cat-header";
+            header.innerHTML = `<span>${cat} (${catNotes.length})</span><i data-lucide="chevron-down"></i>`;
+            
+            header.addEventListener('touchstart', () => { pressTimer = window.setTimeout(() => handleLongPress(cat), 3000); });
+            header.addEventListener('touchend', () => clearTimeout(pressTimer));
+            header.addEventListener('mousedown', () => { pressTimer = window.setTimeout(() => handleLongPress(cat), 3000); });
+            header.addEventListener('mouseup', () => clearTimeout(pressTimer));
+            header.onclick = () => toggleAccordion(header);
+            
+            const grid = document.createElement('div');
+            grid.className = "grid-container";
+            grid.style.display = filter || isEditMode ? 'grid' : 'none';
+            grid.innerHTML = catNotes.map(n => {
+                const isDark = getLuminance(n.color || '#1a1a1a') < 0.5;
+                const textColor = isDark ? '#ffffff' : '#000000';
+                return `
+                <div class="note-card" data-id="${n.id}" style="--note-bg: ${n.color || '#1a1a1a'}; --note-text: ${textColor}" onclick="openNote(${n.id})">
+                    ${isEditMode ? `<div class="drag-handle" style="position:absolute; top:10px; right:10px;"><i data-lucide="grip-vertical" size="18"></i></div>` : ''}
+                    <div class="title-box"><span class="marquee">${n.title}</span></div>
+                    <div class="note-content">${n.content.replace(/\n/g, '<br>')}</div>
+                </div>`;
+            }).join('');
+
+            group.appendChild(header);
+            group.appendChild(grid);
+            container.appendChild(group);
+            if(isEditMode) { new Sortable(grid, { animation: 150, handle: '.note-card', ghostClass: 'sortable-ghost', onEnd: saveNewOrder }); }
+        });
+        lucide.createIcons();
+    }
+
+    async function saveNewOrder() {
+        const db = await openDB();
+        const tx = db.transaction("notes", "readwrite");
+        const store = tx.objectStore("notes");
+        document.querySelectorAll('.note-card').forEach((card, index) => {
+            const note = notes.find(n => n.id === parseInt(card.dataset.id));
+            if(note) { note.order = index; store.put(note); }
+        });
+    }
+
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        document.getElementById('edit-mode-btn').style.color = isEditMode ? '#ff4444' : '#fff';
+        document.getElementById('info-text').innerHTML = isEditMode ? "MODE ÉDITION : GLISSEZ POUR RANGER" : "ACTIVER LE MODE ÉDITION (FLÈCHES)<br>POUR MODIFIER OU RANGER";
+        renderNotes(document.getElementById('note-q').value);
+    }
+
+    function toggleAccordion(el) {
+        if(isEditMode) return;
+        const grid = el.nextElementSibling;
+        const isOpen = grid.style.display === 'grid';
+        grid.style.display = isOpen ? 'none' : 'grid';
+        el.querySelector('i').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function filterNotes() { renderNotes(document.getElementById('note-q').value); }
+
+    function openNote(id) {
+        if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(() => {}); }
+        const panel = document.getElementById('edit-panel');
+        panel.style.display = 'block';
+        panel.style.height = window.visualViewport.height + 'px';
+        const cats = [...new Set(notes.map(n => n.cat || 'DIVERS'))].sort();
+        document.getElementById('f-cat-select').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="NEW">+ NOUVELLE CATÉGORIE</option>';
+
+        if(id) {
+            const n = notes.find(x => x.id === id);
+            document.getElementById('edit-id').value = n.id;
+            document.getElementById('live-title').value = n.title;
+            document.getElementById('live-content').value = n.content;
+            document.getElementById('f-cat-select').value = n.cat;
+            document.getElementById('f-color').value = n.color || "#1a1a1a";
+            applyLiveColor(n.color || "#1a1a1a");
+            document.getElementById('pen-edit-icon').style.display = 'block';
+            document.getElementById('eye-view-icon').style.display = 'none';
+            toggleEditor(false);
+            document.getElementById('btn-delete').style.display = 'block';
+        } else {
+            document.getElementById('edit-id').value = "";
+            document.getElementById('live-title').value = "";
+            document.getElementById('live-content').value = "";
+            document.getElementById('f-color').value = "#1a1a1a";
+            applyLiveColor("#1a1a1a");
+            document.getElementById('pen-edit-icon').style.display = 'none';
+            document.getElementById('eye-view-icon').style.display = 'none';
+            toggleEditor(true);
+            document.getElementById('btn-delete').style.display = 'none';
+        }
+        lucide.createIcons();
+    }
+
+    function toggleEditor(showOptions) {
+        document.getElementById('edit-mode-container').style.display = showOptions ? 'block' : 'none';
+        if (document.getElementById('edit-id').value !== "") {
+            document.getElementById('pen-edit-icon').style.display = showOptions ? 'none' : 'block';
+            document.getElementById('eye-view-icon').style.display = showOptions ? 'block' : 'none';
+        }
+        const select = document.getElementById('f-cat-select');
+        let categoryText = (select.value === 'NEW') ? (document.getElementById('f-cat-new').value || "NOUVELLE CATÉGORIE") : (select.value || "DIVERS");
+        document.getElementById('panel-title').innerText = categoryText;
+        lucide.createIcons();
+    }
+
+    function closeEditForm() { 
+        if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
+        clearTimeout(saveTimeout);
+        saveNote();
+        document.getElementById('edit-panel').style.display = 'none'; 
+        document.getElementById('edit-panel').style.background = 'var(--bg)';
+        document.getElementById('edit-panel').style.color = 'var(--text)';
+    }
+
+    function checkNewCat(val) { 
+        document.getElementById('f-cat-new').style.display = (val === 'NEW') ? 'block' : 'none';
+        toggleEditor(true);
+    }
+
+    function autoSave() {
+        toggleEditor(document.getElementById('edit-mode-container').style.display === 'block');
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveNote, 1000);
+    }
+
+    async function saveNote() {
+        const idField = document.getElementById('edit-id').value;
+        const db = await openDB();
+        const tx = db.transaction("notes", "readwrite");
+        let category = document.getElementById('f-cat-select').value;
+        if(category === 'NEW') category = document.getElementById('f-cat-new').value.trim() || 'DIVERS';
+        const noteData = {
+            title: document.getElementById('live-title').value || "SANS TITRE",
+            content: document.getElementById('live-content').value || "",
+            cat: category.toUpperCase(),
+            color: document.getElementById('f-color').value,
+            order: 0
+        };
+        if(idField) { noteData.id = parseInt(idField); } else if (!noteData.title && !noteData.content) { return; }
+        const request = tx.objectStore("notes").put(noteData);
+        request.onsuccess = (e) => { if(!idField) document.getElementById('edit-id').value = e.target.result; };
+        tx.oncomplete = () => { loadNotes(); };
+    }
+
+    async function deleteNote() {
+        if(!confirm("SUPPRIMER CETTE NOTE ?")) return;
+        const db = await openDB();
+        const tx = db.transaction("notes", "readwrite");
+        tx.objectStore("notes").delete(parseInt(document.getElementById('edit-id').value));
+        tx.oncomplete = () => { closeEditForm(); loadNotes(); };
+    }
+
+    function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
+
+    async function clearDatabase() {
+        if(!confirm("TOUT SUPPRIMER ?")) return;
+        const db = await openDB();
+        const tx = db.transaction("notes", "readwrite");
+        tx.objectStore("notes").clear();
+        tx.oncomplete = () => { loadNotes(); toggleSettings(false); };
+    }
+
+    async function exportData() {
+        const db = await openDB();
+        db.transaction("notes").objectStore("notes").getAll().onsuccess = (e) => {
+            const blob = new Blob([JSON.stringify(e.target.result, null, 2)], {type: "application/json"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = "notes_backup.json"; a.click();
+        };
+    }
+
+    function importData(input) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const data = JSON.parse(e.target.result);
+            const db = await openDB();
+            const tx = db.transaction("notes", "readwrite");
+            data.forEach(n => { if(n.id) delete n.id; tx.objectStore("notes").add(n); });
+            tx.oncomplete = () => { loadNotes(); alert("IMPORT RÉUSSI"); };
+        };
+        reader.readAsText(input.files[0]);
+    }
+
+    window.onload = () => { loadSavedStyles(); loadNotes(); };
+</script>
+</body>
+</html>
