@@ -71,8 +71,8 @@
             background: var(--dynamic-bg); color: var(--dynamic-text);
             z-index: 9999; display: none; flex-direction: column;
             transition: background 0.3s ease;
-            height: 100%; width: 100%;
-            /* Ajout pour permettre le scroll si le clavier réduit trop la vue */
+            height: 100%; height: 100dvh; /* Fix pour redimensionnement clavier mobile */
+            width: 100%;
             overflow-y: auto; 
         }
 
@@ -80,7 +80,7 @@
             padding: 20px; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 2px solid var(--dynamic-border);
             padding-top: max(20px, env(safe-area-inset-top));
-            flex-shrink: 0; /* Empêche l'écrasement du header */
+            flex-shrink: 0; 
         }
         
         .edit-content-area { 
@@ -93,6 +93,7 @@
             color: var(--dynamic-text); font-family: inherit; font-weight: 900; 
             font-size: 1.8rem; margin-bottom: 15px; outline: none;
             user-select: text; -webkit-user-select: text;
+            flex-shrink: 0;
         }
         
         #live-content { 
@@ -100,6 +101,8 @@
             color: var(--dynamic-text); font-family: inherit; font-size: 1.1rem; 
             line-height: 1.6; outline: none; resize: none; text-transform: none;
             user-select: text; -webkit-user-select: text; min-height: 300px;
+            /* Permet de scroller le texte très haut au dessus du clavier */
+            padding-bottom: 50vh; 
         }
 
         ::placeholder { color: var(--dynamic-placeholder); opacity: 1; }
@@ -109,7 +112,7 @@
             padding: 20px; display: none;
             padding-bottom: max(20px, env(safe-area-inset-bottom));
             color: #ffffff;
-            flex-shrink: 0; /* Empêche l'écrasement du drawer */
+            flex-shrink: 0; 
         }
         .form-row { margin-bottom: 15px; }
         .form-row label { font-size: 0.7rem; font-weight: 900; display: block; margin-bottom: 5px; opacity: 0.8; }
@@ -340,7 +343,10 @@
         document.getElementById('new-cat-input').style.display = 'none';
         panel.style.display = 'flex';
 
-        // SUPPRESSION DU CODE PLEIN ÉCRAN ICI
+        // RETOUR DU PLEIN ECRAN
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
+        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
     }
 
     function updateLiveTheme(hex) {
@@ -367,7 +373,10 @@
         if (!isDeleting) saveNoteDirectly();
         document.getElementById('edit-panel').style.display = 'none';
         document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000000');
-        // SUPPRESSION DU CODE DE SORTIE PLEIN ÉCRAN ICI
+        
+        // SORTIE DU PLEIN ECRAN
+        if (document.exitFullscreen && document.fullscreenElement) { document.exitFullscreen(); }
+        else if (document.webkitExitFullscreen && document.webkitFullscreenElement) { document.webkitExitFullscreen(); }
     }
 
     function triggerAutoSave() {
