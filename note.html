@@ -340,9 +340,7 @@
         document.getElementById('new-cat-input').style.display = 'none';
         panel.style.display = 'flex';
 
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
-        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+        // SUPPRESSION DU CODE PLEIN ÉCRAN ICI
     }
 
     function updateLiveTheme(hex) {
@@ -369,8 +367,7 @@
         if (!isDeleting) saveNoteDirectly();
         document.getElementById('edit-panel').style.display = 'none';
         document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000000');
-        if (document.exitFullscreen && document.fullscreenElement) { document.exitFullscreen(); }
-        else if (document.webkitExitFullscreen && document.webkitFullscreenElement) { document.webkitExitFullscreen(); }
+        // SUPPRESSION DU CODE DE SORTIE PLEIN ÉCRAN ICI
     }
 
     function triggerAutoSave() {
