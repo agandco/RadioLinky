@@ -72,12 +72,15 @@
             z-index: 9999; display: none; flex-direction: column;
             transition: background 0.3s ease;
             height: 100%; width: 100%;
+            /* Ajout pour permettre le scroll si le clavier réduit trop la vue */
+            overflow-y: auto; 
         }
 
         .edit-header { 
             padding: 20px; display: flex; justify-content: space-between; align-items: center;
             border-bottom: 2px solid var(--dynamic-border);
             padding-top: max(20px, env(safe-area-inset-top));
+            flex-shrink: 0; /* Empêche l'écrasement du header */
         }
         
         .edit-content-area { 
@@ -106,6 +109,7 @@
             padding: 20px; display: none;
             padding-bottom: max(20px, env(safe-area-inset-bottom));
             color: #ffffff;
+            flex-shrink: 0; /* Empêche l'écrasement du drawer */
         }
         .form-row { margin-bottom: 15px; }
         .form-row label { font-size: 0.7rem; font-weight: 900; display: block; margin-bottom: 5px; opacity: 0.8; }
@@ -173,7 +177,10 @@
         <div class="form-row">
             <label>CATÉGORIE</label>
             <select id="cat-select" onchange="handleCatChange(); triggerAutoSave();"></select>
-            <input type="text" id="new-cat-input" placeholder="NOUVELLE CATÉGORIE" style="display:none; margin-top:10px;" oninput="triggerAutoSave()">
+            <input type="text" id="new-cat-input" placeholder="NOUVELLE CATÉGORIE" 
+                   style="display:none; margin-top:10px;" 
+                   oninput="triggerAutoSave()" 
+                   onfocus="setTimeout(() => { this.scrollIntoView({behavior: 'smooth', block: 'center'}); }, 300)">
         </div>
         <div class="form-row">
             <label>COULEUR</label>
