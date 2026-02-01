@@ -47,7 +47,6 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative;
         }
         
-        /* Correction : Bordure forcée via contrast-border pour la carte en lecture */
         .playing-this { border: 3px solid var(--contrast-border) !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
         .card-art { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-bottom: 10px; background: #1a1a1a; }
         
@@ -56,7 +55,6 @@
         .no-scroll { padding-left: 0 !important; animation: none !important; width: 100%; text-align: center; text-overflow: ellipsis; overflow: hidden; display: block; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-        /* Correction : Bordure mini-player via contrast-border */
         #mini-player { 
             position: fixed; bottom: 20px; left: 10px; right: 10px; height: 85px; 
             background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); 
@@ -90,15 +88,20 @@
         
         .btn-fix-fs { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 2px solid #fff; width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 2100; cursor: pointer; }
 
-        .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; padding: 0 2px;
-        letter-spacing: 2px;
-        }
+        .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; padding: 0 2px; letter-spacing: 2px; }
         .ctrl-opt { opacity: 0.3; transition: 0.3s; cursor: pointer; }
         
-        /* Correction : Bordure sur l'icône favori pour qu'elle soit visible même si l'accent est noir */
         .card-fav-icon { position: absolute; top: 10px; right: 10px; color: #fff; z-index: 10; filter: drop-shadow(0 0 2px #000); }
         .card-fav-icon.is-fav { color: var(--accent); fill: var(--accent); stroke: var(--contrast-border); stroke-width: 2px; }
         
+        /* Styles Guide Conversion */
+        .acc { border: 2px solid #fff; border-radius: 15px; margin-top: 25px; overflow: hidden; }
+        .acc-h { padding: 18px; font-weight: 900; font-size: 0.8rem; background: rgba(255,255,255,0.1); cursor: pointer; display: flex; justify-content: space-between; }
+        .acc-b { display: none; }
+        .guide-step { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; cursor: pointer; }
+        .guide-icon-circle { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; }
+        .guide-text-content { font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
+
         * { text-transform: uppercase; }
         #fullscreen-area { position: absolute; top:0; left:0; width:100%; height:85%; z-index: 5; }
     </style>
@@ -209,10 +212,54 @@
     </div>
     <input type="file" id="import-input" hidden onchange="importFavs(this)">
     
-        <div style="font-size: 0.65rem; font-weight: 700; opacity: 0.6; text-align: center; margin: 15px 0 25px; line-height: 1.4; letter-spacing: 1px;">
+    <div style="font-size: 0.65rem; font-weight: 700; opacity: 0.6; text-align: center; margin: 15px 0 25px; line-height: 1.4; letter-spacing: 1px;">
         PENSEZ À FAIRE UNE SAUVEGARDE DANS LES PARAMÈTRES DE TEMPS EN TEMPS POUR GARDER UNE COPIE DE VOS DONNÉES.
     </div>
+
+
+<div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)">RADIO ➔ MP3 : GUIDE DE CONVERSION</div>
+    <div class="acc-b" style="padding:15px;">
+        <div class="acc-guide-container">
+            <div class="guide-step" onclick="lancerApp('com.shazam.android')">
+                <div class="guide-icon-circle" style="background:#0088ff">1</div>
+                <div class="guide-text-content">
+                    <b style="color:#0088ff">1. Identifier (Shazam)</b><br>
+                    - Lancez l'écoute<br>
+                    - <b>Copiez</b> le nom du titre.
+                </div>
+            </div>
+
+            <div class="guide-step" onclick="window.open('https://cafepia.fr', '_blank')">
+                <div class="guide-icon-circle" style="background:#ff0000">2</div>
+                <div class="guide-text-content">
+                    <b style="color:#ff0000">2. Rechercher & Télécharger</b><br>
+                    - Collez le titre dans la barre.<br>
+                    - Cliquez sur l'icône <b>Play</b> pour écouter.<br>
+                    - Cliquez sur <b>Download</b> pour le MP3.
+                </div>
+            </div>
+
+            <div class="guide-step" onclick="lancerApp('tk2013.mp3_tag_convert')">
+                <div class="guide-icon-circle" style="background:#4CAF50">3</div>
+                <div class="guide-text-content">
+                    <b style="color:#4CAF50">3. Finaliser (TK Editor)</b><br>
+                    - Ouvrez le fichier téléchargé.<br>
+                    - Ajoutez la pochette et les tags.<br>
+                    - Enregistrez.
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -514,6 +561,30 @@
             };
         });
     }
+
+function toggleAcc(el) {
+    const body = el.nextElementSibling;
+    // Vérifie si le menu est déjà ouvert ou non
+    if (body.style.display === "block") {
+        body.style.display = "none";
+    } else {
+        body.style.display = "block";
+    }
+}
+
+
+function lancerApp(packageName) {
+    if (packageName === 'org.schabi.newpipe') {
+        // On utilise un lien de recherche YouTube que NewPipe intercepte par défaut
+        window.location.href = "https://www.youtube.com/results?search_query=";
+    } else {
+        // Pour les autres (Shazam, TK Editor), on garde l'intent classique
+        window.location.href = "intent://#Intent;package=" + packageName + ";scheme=package;S.browser_fallback_url=about:blank;end";
+    }
+}
+
+
+
 
     function toggleAccordion(el) {
         const grid = el.nextElementSibling;
