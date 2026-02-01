@@ -34,7 +34,10 @@
         
         /* HEADER & RECHERCHE */
         .header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; padding: 0 4px; letter-spacing: 2px; }
+        
+                .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; padding: 0 2px;
+        letter-spacing: 2px;
+        }
         
         .search-box input { 
             width: 100%; padding: 18px 20px; border-radius: 18px; 
@@ -139,7 +142,7 @@
 
 <div class="app-container" id="main-view">
     <div class="header-row">
-        <h1 style="font-weight:900; margin:0; font-size:1.5rem;">NOTE <span class="elite-text">ELITE</span></h1>
+            <h1 style="font-weight:900; margin:0;">NOTE <span class="elite-text">ELITE</span></h1>
         <div style="display:flex; gap:20px;">
             <i data-lucide="arrow-down-up" id="sort-btn" onclick="toggleSortMode()" style="cursor:pointer;"></i>
             <i data-lucide="settings" onclick="document.getElementById('settings-panel').style.display='block'" style="cursor:pointer;"></i>
