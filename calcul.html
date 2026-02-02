@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CALCULATRICE ELITE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root { --bg: #0a0a0a; --accent: #4CAF50; --btn-text: #ffffff; --op-bg: #1a1a1a; --eq-border: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        body { 
+            background: var(--bg); color: white; font-family: sans-serif; 
+            margin: 0; height: 99vh; display: flex; justify-content: center; overflow: hidden; 
+        }
+        
+        .app-container { 
+            width: 100%; max-width: 450px; height: 100%;
+            display: flex; flex-direction: column; padding: 20px;
+        }
+        
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding-top: 10px; flex-shrink: 0;
+        }
+        .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; padding: 0 2px; letter-spacing: 2px; }
+
+        .screen { 
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+        }
+        
+        #display { font-size: 1.9rem; width: 100%; text-align: right; word-break: break-all; line-height: 1; }
+        #live-result { font-size: 2.2rem; opacity: 0.3; margin-top: 10px; min-height: 2.5rem; }
+
+        .grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%;
+        }
+        
+        .btn { 
+            aspect-ratio: 1; border-radius: 50%; border: none; background: #1a1a1a; 
+            color: white; font-size: 1.8rem; cursor: pointer; display: flex; 
+            align-items: center; justify-content: center; transition: 0.1s;
+        }
+        .btn:active { transform: scale(0.9); filter: brightness(1.5); }
+        
+        .op { color: var(--accent); background: var(--op-bg); }
+        .eq { background: var(--accent); color: var(--btn-text); border: 2px solid var(--eq-border); }
+        .clear { color: #ff5252; }
+
+        #settings { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.97); 
+            padding: 40px; z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .settings-card {
+            background: #1a1a1a; padding: 35px 25px; border-radius: 35px; width: 100%; max-width: 320px;
+            text-align: center; border: 1px solid #333; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        #colorPicker { 
+            -webkit-appearance: none; border: none; width: 100px; height: 100px; 
+            cursor: pointer; background: none; margin: 20px 0;
+        }
+        #colorPicker::-webkit-color-swatch { border-radius: 25px; border: 4px solid white; }
+    </style>
+</head>
+<body>
+
+<div id="settings">
+    <div class="settings-card">
+        <h2 style="margin-top:0; font-weight: 900; letter-spacing: 1px;">RÉGLAGES <span class="elite-text">ELITE</span></h2>
+        
+        <div style="margin: 25px 0;">
+            <p style="opacity: 0.6; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Couleur d'accentuation</p>
+            <input type="color" id="colorPicker" oninput="setAccent(this.value)">
+        </div>
+
+        <button class="btn" style="width:100%; border-radius:20px; aspect-ratio:auto; padding:15px; font-size:1.1rem; background: #333; font-weight: bold;" onclick="toggleSettings()">FERMER</button>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="header">
+        <h1 style="font-weight:900; margin:0;">CALCUL <span class="elite-text">ELITE</span></h1>
+        <i data-lucide="maximize" onclick="toggleFullScreen()" style="cursor:pointer; opacity:0.3; margin-right: 15px;"></i>
+        
+        <i data-lucide="settings" onclick="toggleSettings()" style="cursor:pointer; opacity:0.3;"></i>
+    </div>
+
+    <div class="screen">
+        <div id="display">0</div>
+        <div id="live-result"></div>
+    </div>
+
+    <div class="grid">
+        <button class="btn clear" onclick="reset()">C</button>
+        <button class="btn op" onclick="addParen()">( )</button>
+        <button class="btn op" onclick="addOp('%')">%</button>
+        <button class="btn op" onclick="addOp('/')">÷</button>
+
+        <button class="btn" onclick="addNum('7')">7</button>
+        <button class="btn" onclick="addNum('8')">8</button>
+        <button class="btn" onclick="addNum('9')">9</button>
+        <button class="btn op" onclick="addOp('*')">×</button>
+
+        <button class="btn" onclick="addNum('4')">4</button>
+        <button class="btn" onclick="addNum('5')">5</button>
+        <button class="btn" onclick="addNum('6')">6</button>
+        <button class="btn op" onclick="addOp('-')">−</button>
+
+        <button class="btn" onclick="addNum('1')">1</button>
+        <button class="btn" onclick="addNum('2')">2</button>
+        <button class="btn" onclick="addNum('3')">3</button>
+        <button class="btn op" onclick="addOp('+')">+</button>
+
+        <button class="btn" onclick="togglePlusMinus()">+/-</button>
+        <button class="btn" onclick="addNum('0')">0</button>
+        <button class="btn" onclick="addNum('.')">,</button>
+        <button class="btn eq" onclick="finalize()">=</button>
+    </div>
+</div>
+
+<script>
+    let expr = "0";
+    const disp = document.getElementById('display');
+    const live = document.getElementById('live-result');
+    const colorPicker = document.getElementById('colorPicker');
+
+    window.onload = () => {
+        const savedColor = localStorage.getItem('eliteCalcColor') || '#4CAF50';
+        setAccent(savedColor);
+        lucide.createIcons();
+    };
+
+    function setAccent(c) {
+        document.documentElement.style.setProperty('--accent', c);
+        
+        const r = parseInt(c.substr(1,2), 16);
+        const g = parseInt(c.substr(3,2), 16);
+        const b = parseInt(c.substr(5,2), 16);
+        const yiq = ((r*299)+(g*587)+(b*114))/1000;
+        
+        const textColor = (yiq >= 128) ? '#000000' : '#ffffff';
+        document.documentElement.style.setProperty('--btn-text', textColor);
+        
+        // Logique de contraste pour le fond des opérateurs et la bordure de "="
+        if (yiq < 90) {
+            document.documentElement.style.setProperty('--op-bg', '#bbbbbb');
+            document.documentElement.style.setProperty('--eq-border', '#bbbbbb');
+        } else {
+            document.documentElement.style.setProperty('--op-bg', '#1a1a1a');
+            document.documentElement.style.setProperty('--eq-border', 'transparent');
+        }
+
+        localStorage.setItem('eliteCalcColor', c);
+        colorPicker.value = c; 
+    }
+
+    function refresh() {
+        disp.innerText = expr.replace(/\*/g, '×').replace(/\//g, '÷').replace(/\./g, ',');
+        calculateLive();
+    }
+
+    function addNum(n) {
+        if (expr === "0") expr = n; else expr += n;
+        refresh();
+    }
+
+    function addOp(o) {
+        const last = expr.slice(-1);
+        if (['+','-','*','/','%'].includes(last)) expr = expr.slice(0, -1) + o;
+        else expr += o;
+        refresh();
+    }
+
+    function calculateLive() {
+        try {
+            let tempExpr = expr.replace(/(\d+\.?\d*)([\+\-\*\/])(\d+\.?\d*)%/g, (m, b, o, p) => {
+                let v = (parseFloat(b) * parseFloat(p) / 100);
+                return b + o + v;
+            }).replace(/(\d+\.?\d*)%/g, "($1/100)");
+            let res = eval(tempExpr);
+            live.innerText = (res !== undefined && res.toString() !== expr) ? parseFloat(res.toFixed(8)).toString().replace(/\./g, ',') : "";
+        } catch { live.innerText = ""; }
+    }
+
+    function finalize() {
+        if (live.innerText !== "") {
+            expr = live.innerText.replace(/,/g, '.');
+            live.innerText = "";
+            refresh();
+        }
+    }
+
+    function addParen() {
+        let open = (expr.match(/\(/g) || []).length;
+        let close = (expr.match(/\)/g) || []).length;
+        if (open > close && !isNaN(expr.slice(-1))) expr += ")";
+        else { if (expr === "0") expr = "("; else expr += "("; }
+        refresh();
+    }
+
+    function togglePlusMinus() {
+        if (expr === "0") return;
+        expr = expr.startsWith('-') ? expr.substring(1) : '-' + expr;
+        refresh();
+    }
+
+    function reset() { expr = "0"; live.innerText = ""; refresh(); }
+    function toggleSettings() {
+        const s = document.getElementById('settings');
+        s.style.display = (s.style.display === 'flex') ? 'none' : 'flex';
+    }
+    
+    function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            alert(`Erreur : ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+</script>
+</body>
+</html>
