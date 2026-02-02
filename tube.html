@@ -395,26 +395,47 @@
     };
 }
 
-
-    function importData(input) {
+        async function importData(input) {
         if(!input.files[0]) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
                 const db = await openDB();
+                
+                // 1. Récupérer les IDs YouTube déjà existants pour éviter les doublons
+                const transactionRead = db.transaction("tubes", "readonly");
+                const currentData = await new Promise(resolve => {
+                    transactionRead.objectStore("tubes").getAll().onsuccess = (ev) => resolve(ev.target.result);
+                });
+                const existingYids = new Set(currentData.map(item => item.yid));
+
+                // 2. Lancer la transaction d'écriture
                 const tx = db.transaction("tubes", "readwrite");
                 const store = tx.objectStore("tubes");
+                
+                let importCount = 0;
                 data.forEach(t => { 
-                    const item = {...t};
-                    delete item.id; 
-                    store.add(item); 
+                    // On ne rajoute que si le yid n'est pas déjà présent
+                    if (!existingYids.has(t.yid)) {
+                        const item = {...t};
+                        delete item.id; // On laisse IndexedDB générer un nouvel ID unique
+                        store.add(item); 
+                        importCount++;
+                    }
                 });
-                tx.oncomplete = () => { alert(`IMPORT REUSSI`); loadData(); };
-            } catch (err) { alert("ERREUR"); }
+
+                tx.oncomplete = () => { 
+                    alert(`IMPORT RÉUSSI : ${importCount} NOUVEAUX TUBES AJOUTÉS.`); 
+                    loadData(); 
+                };
+            } catch (err) { 
+                alert("ERREUR LORS DE L'IMPORTATION"); 
+            }
         };
         reader.readAsText(input.files[0]);
     }
+
 </script>
 </body>
 </html>
