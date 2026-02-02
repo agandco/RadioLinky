@@ -365,15 +365,36 @@
     }
 
     async function exportData() {
-        const db = await openDB();
-        db.transaction("tubes").objectStore("tubes").getAll().onsuccess = (e) => {
-            const blob = new Blob([JSON.stringify(e.target.result)], {type: "application/json"});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `ELITE_TUBE_BACKUP.json`;
-            a.click();
-        };
-    }
+    const db = await openDB();
+    const transaction = db.transaction("tubes", "readonly");
+    const store = transaction.objectStore("tubes");
+    const request = store.getAll();
+
+    request.onsuccess = (e) => {
+        const data = e.target.result;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        // Format du nom : RADIOLINKY_TUBE_2026-02-02.json
+        a.download = `RADIOLINKY_TUBE_${new Date().toISOString().slice(0, 10)}.json`;
+        
+        // Ajout temporaire au document pour garantir le clic sur certains navigateurs mobiles
+        document.body.appendChild(a);
+        a.click();
+        
+        // Nettoyage immédiat
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    request.onerror = (err) => {
+        console.error("Erreur lors de l'export :", err);
+        alert("Erreur lors de l'exportation des données.");
+    };
+}
+
 
     function importData(input) {
         if(!input.files[0]) return;
