@@ -29,11 +29,13 @@
             color: var(--text); 
             font-family: 'Montserrat', sans-serif; 
             width: 100%;
-            height: 100%;
-            overflow: hidden;
+            height: 100vh;
+            overflow: auto;
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
+            -webkit-overflow-scrolling: touch;
+
         }
 
         .menu-container {
@@ -63,7 +65,7 @@
             grid-template-columns: repeat(2, 1fr); 
             gap: 10px;
             background: #000;
-            padding-bottom: 20px;
+            padding-bottom: 50px;
         }
 
         .nav-link {
@@ -159,6 +161,12 @@
         </a>
         <a href="https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56" target="_blank" class="nav-link donate-link">
         <i data-lucide="heart"></i>FAIRE UN DON
+        </a>
+        </a>
+        <hr>
+        <small>INFOS :</small><br>
+        <a href="info.html" target="app-viewport" class="nav-link" onclick="handleNav()">
+        <i data-lucide="info"></i>INFO
         </a>
         </div>
     </div>
