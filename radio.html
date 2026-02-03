@@ -149,13 +149,13 @@
     
     <div class="btn-fix-fs" id="btn-fix-fs" onclick="requestFullScreen()"><i data-lucide="maximize" size="20"></i></div>
 
-    <div style="position:relative; width:340px; height:340px; display:flex; align-items:center; justify-content:center; margin-top:20px;">
+    <div style="position:relative; width:340px; height:340px; display:flex; align-items:center; justify-content:center; margin-top:10px;">
         <canvas id="viz-circle" width="340" height="340" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
         <img id="fs-art" src="https://i.imgur.com/vsqN1NZ.png" style="width:210px; height:210px; border-radius:50%; border:4px solid #fff; object-fit:cover; z-index:5;">
     </div>
-    <div style="margin-top:40px; text-align:center; z-index:10; width: 100%; padding: 0 20px;">
+    <div style="margin-top:50px; text-align:center; z-index:10; width: 100%; padding: 0 20px;">
         <div id="fs-clock" style="color:var(--clock-color); font-weight:700; margin-bottom:15px; letter-spacing: 2px;">00:00:00</div>
-        <div class="title-box" style="height:40px;"><span id="fs-title" class="marquee" style="font-size:1.6rem; color:#fff;">Titre Radio</span></div>
+        <div class="title-box" style="height:40px;"><span id="fs-title" class="marquee" style="font-size:1.2rem; color:#fff;">Titre Radio</span></div>
     </div> <div style="display:flex; width:100%; justify-content:space-around; align-items:center; margin-top:30px; z-index:10; padding:0 20px;">
         <i data-lucide="timer" class="ctrl-opt" onclick="toggleTimer()" size="30"></i>
         <button class="btn-circle btn-mini-play" onclick="togglePlay()"><i data-lucide="play" id="btn-play-fs" size="30" style="color: inherit;"></i></button>
