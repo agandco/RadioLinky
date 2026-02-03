@@ -56,10 +56,19 @@
             text-align: center; border: 1px solid #333; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         #colorPicker { 
-            -webkit-appearance: none; border: none; width: 100px; height: 100px; 
-            cursor: pointer; background: none; margin: 20px 0;
+            -webkit-appearance: none; border: none; width: 60px; height: 60px; 
+            cursor: pointer; background: none; margin: 10px 0;
         }
-        #colorPicker::-webkit-color-swatch { border-radius: 25px; border: 4px solid white; }
+        #colorPicker::-webkit-color-swatch { border-radius: 15px; border: 3px solid white; }
+
+        /* Style du Switch Vibration */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #555; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); }
     </style>
 </head>
 <body>
@@ -68,21 +77,30 @@
     <div class="settings-card">
         <h2 style="margin-top:0; font-weight: 900; letter-spacing: 1px;">RÉGLAGES <span class="elite-text">ELITE</span></h2>
         
-        <div style="margin: 25px 0;">
-            <p style="opacity: 0.6; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Couleur d'accentuation</p>
+        <div class="setting-row">
+            <span style="font-weight: bold; font-size: 0.8rem; letter-spacing: 1px;">VIBRATION</span>
+            <label class="switch">
+                <input type="checkbox" id="vibration-toggle" onchange="toggleVibration(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <p style="opacity: 0.6; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Couleur d'accentuation</p>
             <input type="color" id="colorPicker" oninput="setAccent(this.value)">
         </div>
 
-        <button class="btn" style="width:100%; border-radius:20px; aspect-ratio:auto; padding:15px; font-size:1.1rem; background: #333; font-weight: bold;" onclick="toggleSettings()">FERMER</button>
+        <button class="btn" style="width:100%; border-radius:20px; aspect-ratio:auto; padding:15px; font-size:1.1rem; background: #333; font-weight: bold;" onclick="vibrate(); toggleSettings()">FERMER</button>
     </div>
 </div>
 
 <div class="app-container">
     <div class="header">
         <h1 style="font-weight:900; margin:0;">CALCUL <span class="elite-text">ELITE</span></h1>
-        <i data-lucide="maximize" onclick="toggleFullScreen()" style="cursor:pointer; opacity:0.3; margin-right: 15px;"></i>
-        
-        <i data-lucide="settings" onclick="toggleSettings()" style="cursor:pointer; opacity:0.3;"></i>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <i data-lucide="maximize" onclick="vibrate(); toggleFullScreen()" style="cursor:pointer; opacity:0.3;"></i>
+            <i data-lucide="settings" onclick="vibrate(); toggleSettings()" style="cursor:pointer; opacity:0.3;"></i>
+        </div>
     </div>
 
     <div class="screen">
@@ -91,35 +109,36 @@
     </div>
 
     <div class="grid">
-        <button class="btn clear" onclick="reset()">C</button>
-        <button class="btn op" onclick="addParen()">( )</button>
-        <button class="btn op" onclick="addOp('%')">%</button>
-        <button class="btn op" onclick="addOp('/')">÷</button>
+        <button class="btn clear" onclick="vibrate(); reset()">C</button>
+        <button class="btn op" onclick="vibrate(); addParen()">( )</button>
+        <button class="btn op" onclick="vibrate(); addOp('%')">%</button>
+        <button class="btn op" onclick="vibrate(); addOp('/')">÷</button>
 
-        <button class="btn" onclick="addNum('7')">7</button>
-        <button class="btn" onclick="addNum('8')">8</button>
-        <button class="btn" onclick="addNum('9')">9</button>
-        <button class="btn op" onclick="addOp('*')">×</button>
+        <button class="btn" onclick="vibrate(); addNum('7')">7</button>
+        <button class="btn" onclick="vibrate(); addNum('8')">8</button>
+        <button class="btn" onclick="vibrate(); addNum('9')">9</button>
+        <button class="btn op" onclick="vibrate(); addOp('*')">×</button>
 
-        <button class="btn" onclick="addNum('4')">4</button>
-        <button class="btn" onclick="addNum('5')">5</button>
-        <button class="btn" onclick="addNum('6')">6</button>
-        <button class="btn op" onclick="addOp('-')">−</button>
+        <button class="btn" onclick="vibrate(); addNum('4')">4</button>
+        <button class="btn" onclick="vibrate(); addNum('5')">5</button>
+        <button class="btn" onclick="vibrate(); addNum('6')">6</button>
+        <button class="btn op" onclick="vibrate(); addOp('-')">−</button>
 
-        <button class="btn" onclick="addNum('1')">1</button>
-        <button class="btn" onclick="addNum('2')">2</button>
-        <button class="btn" onclick="addNum('3')">3</button>
-        <button class="btn op" onclick="addOp('+')">+</button>
+        <button class="btn" onclick="vibrate(); addNum('1')">1</button>
+        <button class="btn" onclick="vibrate(); addNum('2')">2</button>
+        <button class="btn" onclick="vibrate(); addNum('3')">3</button>
+        <button class="btn op" onclick="vibrate(); addOp('+')">+</button>
 
-        <button class="btn" onclick="togglePlusMinus()">+/-</button>
-        <button class="btn" onclick="addNum('0')">0</button>
-        <button class="btn" onclick="addNum('.')">,</button>
-        <button class="btn eq" onclick="finalize()">=</button>
+        <button class="btn" onclick="vibrate(); togglePlusMinus()">+/-</button>
+        <button class="btn" onclick="vibrate(); addNum('0')">0</button>
+        <button class="btn" onclick="vibrate(); addNum('.')">,</button>
+        <button class="btn eq" onclick="vibrate(); finalize()">=</button>
     </div>
 </div>
 
 <script>
     let expr = "0";
+    let vibrationEnabled = false;
     const disp = document.getElementById('display');
     const live = document.getElementById('live-result');
     const colorPicker = document.getElementById('colorPicker');
@@ -127,8 +146,25 @@
     window.onload = () => {
         const savedColor = localStorage.getItem('eliteCalcColor') || '#4CAF50';
         setAccent(savedColor);
+        
+        // Charger l'état de la vibration
+        vibrationEnabled = localStorage.getItem('eliteCalcVibration') === 'true';
+        document.getElementById('vibration-toggle').checked = vibrationEnabled;
+        
         lucide.createIcons();
     };
+
+    function toggleVibration(state) {
+        vibrationEnabled = state;
+        localStorage.setItem('eliteCalcVibration', state);
+        if(state) vibrate();
+    }
+
+    function vibrate() {
+        if (vibrationEnabled && window.navigator.vibrate) {
+            window.navigator.vibrate(12);
+        }
+    }
 
     function setAccent(c) {
         document.documentElement.style.setProperty('--accent', c);
@@ -141,7 +177,6 @@
         const textColor = (yiq >= 128) ? '#000000' : '#ffffff';
         document.documentElement.style.setProperty('--btn-text', textColor);
         
-        // Logique de contraste pour le fond des opérateurs et la bordure de "="
         if (yiq < 90) {
             document.documentElement.style.setProperty('--op-bg', '#bbbbbb');
             document.documentElement.style.setProperty('--eq-border', '#bbbbbb');
@@ -205,21 +240,21 @@
     }
 
     function reset() { expr = "0"; live.innerText = ""; refresh(); }
+    
     function toggleSettings() {
         const s = document.getElementById('settings');
         s.style.display = (s.style.display === 'flex') ? 'none' : 'flex';
     }
     
     function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            alert(`Erreur : ${err.message}`);
-        });
-    } else {
-        document.exitFullscreen();
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Erreur : ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
     }
-}
-
 </script>
 </body>
 </html>

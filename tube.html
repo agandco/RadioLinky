@@ -97,6 +97,24 @@
         .color-row { background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 2px solid #fff; }
 
         .btn-action { width: 100%; background: var(--accent); color: var(--contrast-text); padding: 20px; border-radius: 15px; font-weight: 900; border: 2px solid var(--contrast-border); cursor: pointer; margin-top: 10px; }
+
+        /* Style pour le switch vibration */
+        .vibration-row { 
+            background: rgba(255,255,255,0.05); 
+            padding: 18px; 
+            border-radius: 15px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 2px solid #fff; 
+        }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #fff; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); background-color: var(--contrast-text); }
     </style>
 </head>
 <body>
@@ -104,16 +122,16 @@
 <div class="app-container">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
         <h1 style="font-weight:900; margin:0;">TUBE <span class="elite-text">ELITE</span></h1>
-        <i data-lucide="settings" onclick="toggleSettings(true)" style="cursor:pointer;"></i>
+        <i data-lucide="settings" onclick="vibrate(); toggleSettings(true)" style="cursor:pointer;"></i>
     </div>
 
     <div class="nav-tabs">
-        <button class="tab-btn active" id="tab-favs"><i data-lucide="play-circle"></i> MA LISTE</button>
-        <button class="tab-btn" onclick="window.open('https://cafepia.fr', '_blank')">
+        <button class="tab-btn active" id="tab-favs" onclick="vibrate()"><i data-lucide="play-circle"></i> MA LISTE</button>
+        <button class="tab-btn" onclick="vibrate(); window.open('https://cafepia.fr', '_blank')">
     <i data-lucide="download"></i> MP3
 </button>
 
-        <button class="tab-btn" id="tab-add" onclick="openEditForm()"><i data-lucide="plus-circle"></i> NOUVEAU</button>
+        <button class="tab-btn" id="tab-add" onclick="vibrate(); openEditForm()"><i data-lucide="plus-circle"></i> NOUVEAU</button>
     </div>
 
     <div id="section-favs">
@@ -124,11 +142,11 @@
         </div>
 
         <div class="search-box">
-            <div style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; cursor: pointer;" onclick="toggleInfo()">
+            <div style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; cursor: pointer;" onclick="vibrate(); toggleInfo()">
                 <i data-lucide="info" style="width:20px; height:20px; color: var(--accent);"></i>
             </div>
             <input type="text" id="tube-search" style="padding-left: 45px; width:100%" placeholder="Rechercher..." oninput="filterLibrary(this.value)">
-            <button class="search-btn" onclick="externalSearch()"><i data-lucide="search"></i></button>
+            <button class="search-btn" onclick="vibrate(); externalSearch()"><i data-lucide="search"></i></button>
         </div>
         <div id="favs-accordion-container"></div>
     </div>
@@ -137,7 +155,7 @@
 <div id="edit-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
         <h2 style="font-weight:900; margin:0;" id="form-title">AJOUTER TUBE</h2>
-        <i data-lucide="x" onclick="document.getElementById('edit-panel').style.display='none'"></i>
+        <i data-lucide="x" onclick="vibrate(); document.getElementById('edit-panel').style.display='none'"></i>
     </div>
     <div style="text-align:center; margin-bottom:20px;">
         <img id="form-preview" src="https://www.pixartprinting.fr/blog/wp-content/uploads/2025/05/Youtube_logo.jpg" style="width:140px; height:90px; border-radius:15px; border:2px solid var(--contrast-border); object-fit:cover;">
@@ -149,25 +167,34 @@
     
     <div class="form-group">
         <label>CATÉGORIE</label>
-        <select id="f-cat-select" onchange="toggleNewCat()"></select>
+        <select id="f-cat-select" onchange="vibrate(); toggleNewCat()"></select>
         <input type="text" id="f-cat-new" placeholder="Nom de la nouvelle catégorie" style="display:none; margin-top:10px;">
     </div>
-    <button onclick="saveTube()" class="btn-action">ENREGISTRER</button>
-    <button id="btn-delete" onclick="deleteTube()" style="display:none; width:100%; background:#ff4444; color:#fff; padding:15px; border-radius:15px; font-weight:900; border:none; margin-top:15px;">SUPPRIMER CE TUBE</button>
+    <button onclick="vibrate(); saveTube()" class="btn-action">ENREGISTRER</button>
+    <button id="btn-delete" onclick="vibrate(); deleteTube()" style="display:none; width:100%; background:#ff4444; color:#fff; padding:15px; border-radius:15px; font-weight:900; border:none; margin-top:15px;">SUPPRIMER CE TUBE</button>
 </div>
 
 <div id="settings-panel">
     <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
         <h2 style="font-weight:900; margin:0;">PARAMÈTRES</h2>
-        <i data-lucide="x" onclick="toggleSettings(false)"></i>
+        <i data-lucide="x" onclick="vibrate(); toggleSettings(false)"></i>
     </div>
+
+    <div class="vibration-row">
+        <label style="font-weight:900;">VIBRATION AU CLIC</label>
+        <label class="switch">
+            <input type="checkbox" id="vibration-toggle" onchange="toggleVibration(this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
     <div class="color-row">
         <label style="font-weight:900;">COULEUR ACCENT</label>
         <input type="color" id="accent-picker" oninput="updateStyle('accent', this.value)">
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;">
-        <button onclick="exportData()" style="padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none;">SAUVEGARDER</button>
-        <button onclick="document.getElementById('import-input').click()" style="padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none;">IMPORTER</button>
+        <button onclick="vibrate(); exportData()" style="padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none;">SAUVEGARDER</button>
+        <button onclick="vibrate(); document.getElementById('import-input').click()" style="padding:15px; border-radius:12px; background:#fff; color:#000; font-weight:800; border:none;">IMPORTER</button>
     </div>
     <input type="file" id="import-input" hidden onchange="importData(this)">
     
@@ -179,11 +206,30 @@
 <script>
     let library = [], pressTimer;
     const DB_NAME = "ELITE_TUBE_DB";
+    let vibrationEnabled = false;
 
     window.onload = () => {
         loadSavedStyles();
+        loadVibrationState();
         loadData();
     };
+
+    function loadVibrationState() {
+        vibrationEnabled = localStorage.getItem('ELITE_TUBE_vibration') === 'true';
+        document.getElementById('vibration-toggle').checked = vibrationEnabled;
+    }
+
+    function toggleVibration(state) {
+        vibrationEnabled = state;
+        localStorage.setItem('ELITE_TUBE_vibration', state);
+        if(state) vibrate();
+    }
+
+    function vibrate() {
+        if (vibrationEnabled && window.navigator.vibrate) {
+            window.navigator.vibrate(10);
+        }
+    }
 
     function toggleInfo() {
         const info = document.getElementById('info-box');
@@ -272,7 +318,7 @@
             const catTubes = filtered.filter(t => (t.cat || 'DIVERS') === cat);
 
             group.innerHTML = `
-                <div class="cat-header" onclick="toggleAccordion(this)">
+                <div class="cat-header" onclick="vibrate(); toggleAccordion(this)">
                     <span>${cat} (${catTubes.length})</span><i data-lucide="chevron-down"></i>
                 </div>
                 <div class="grid-container">
@@ -280,7 +326,7 @@
                         <div class="video-card" 
                              onmousedown="startPress(${t.id})" ontouchstart="startPress(${t.id})"
                              onmouseup="cancelPress()" ontouchend="cancelPress()"
-                             onclick="playTube('${t.yid}')">
+                             onclick="vibrate(); playTube('${t.yid}')">
                             <img src="https://img.youtube.com/vi/${t.yid}/mqdefault.jpg" class="card-art">
                             <div class="title-box"><span class="marquee">${t.name}</span></div>
                         </div>
@@ -353,11 +399,11 @@
         if(id) tube.id = parseInt(id);
 
         const tx = db.transaction("tubes", "readwrite");
-        tx.objectStore("tubes").put(tube);
         tx.oncomplete = () => {
             document.getElementById('edit-panel').style.display = 'none';
             loadData();
         };
+        tx.objectStore("tubes").put(tube);
     }
 
     async function deleteTube() {
@@ -370,7 +416,12 @@
         };
     }
 
-    function startPress(id) { pressTimer = setTimeout(() => openEditForm(id), 1000); }
+    function startPress(id) { 
+        pressTimer = setTimeout(() => {
+            vibrate();
+            openEditForm(id);
+        }, 1000); 
+    }
     function cancelPress() { clearTimeout(pressTimer); }
     function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
 
@@ -401,14 +452,11 @@
         
         const a = document.createElement('a');
         a.href = url;
-        // Format du nom : RADIOLINKY_TUBE_2026-02-02.json
         a.download = `RADIOLINKY_TUBE_${new Date().toISOString().slice(0, 10)}.json`;
         
-        // Ajout temporaire au document pour garantir le clic sur certains navigateurs mobiles
         document.body.appendChild(a);
         a.click();
         
-        // Nettoyage immédiat
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
@@ -427,23 +475,20 @@
                 const data = JSON.parse(e.target.result);
                 const db = await openDB();
                 
-                // 1. Récupérer les IDs YouTube déjà existants pour éviter les doublons
                 const transactionRead = db.transaction("tubes", "readonly");
                 const currentData = await new Promise(resolve => {
                     transactionRead.objectStore("tubes").getAll().onsuccess = (ev) => resolve(ev.target.result);
                 });
                 const existingYids = new Set(currentData.map(item => item.yid));
 
-                // 2. Lancer la transaction d'écriture
                 const tx = db.transaction("tubes", "readwrite");
                 const store = tx.objectStore("tubes");
                 
                 let importCount = 0;
                 data.forEach(t => { 
-                    // On ne rajoute que si le yid n'est pas déjà présent
                     if (!existingYids.has(t.yid)) {
                         const item = {...t};
-                        delete item.id; // On laisse IndexedDB générer un nouvel ID unique
+                        delete item.id; 
                         store.add(item); 
                         importCount++;
                     }

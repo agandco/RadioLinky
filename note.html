@@ -136,6 +136,14 @@
             background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; 
             margin-bottom: 20px; border: 2px solid #fff;
         }
+
+        /* Switch Vibration */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #fff; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); background-color: var(--contrast-text); }
     </style>
 </head>
 <body>
@@ -144,8 +152,8 @@
     <div class="header-row">
             <h1 style="font-weight:900; margin:0;">NOTE <span class="elite-text">ELITE</span></h1>
         <div style="display:flex; gap:20px;">
-            <i data-lucide="arrow-down-up" id="sort-btn" onclick="toggleSortMode()" style="cursor:pointer;"></i>
-            <i data-lucide="settings" onclick="document.getElementById('settings-panel').style.display='block'" style="cursor:pointer;"></i>
+            <i data-lucide="arrow-down-up" id="sort-btn" onclick="vibrate(); toggleSortMode()" style="cursor:pointer;"></i>
+            <i data-lucide="settings" onclick="vibrate(); document.getElementById('settings-panel').style.display='block'" style="cursor:pointer;"></i>
         </div>
     </div>
 
@@ -157,17 +165,17 @@
         MODE DÉPLACEMENT ACTIVÉ (GLISSEZ LES NOTES)
     </div>
 
-    <button class="btn-add" onclick="createNewNote()">+ NOUVELLE NOTE</button>
+    <button class="btn-add" onclick="vibrate(); createNewNote()">+ NOUVELLE NOTE</button>
 
     <div id="notes-container"></div>
 </div>
 
 <div id="edit-panel">
     <div class="edit-header">
-        <i data-lucide="chevron-left" onclick="closeEditor()" style="cursor:pointer;"></i>
+        <i data-lucide="chevron-left" onclick="vibrate(); closeEditor()" style="cursor:pointer;"></i>
         <div style="display:flex; align-items:center;">
             <span id="save-status" class="status-indicator"></span>
-            <i data-lucide="sliders-horizontal" onclick="toggleOptions()" style="cursor:pointer;"></i>
+            <i data-lucide="sliders-horizontal" onclick="vibrate(); toggleOptions()" style="cursor:pointer;"></i>
         </div>
     </div>
 
@@ -179,7 +187,7 @@
     <div id="options-drawer">
         <div class="form-row">
             <label>CATÉGORIE</label>
-            <select id="cat-select" onchange="handleCatChange(); triggerAutoSave();"></select>
+            <select id="cat-select" onchange="vibrate(); handleCatChange(); triggerAutoSave();"></select>
             <input type="text" id="new-cat-input" placeholder="NOUVELLE CATÉGORIE" 
                    style="display:none; margin-top:10px;" 
                    oninput="triggerAutoSave()" 
@@ -189,7 +197,7 @@
             <label>COULEUR</label>
             <input type="color" id="color-picker" oninput="updateLiveTheme(this.value); triggerAutoSave();">
         </div>
-        <button onclick="deleteCurrentNote()" style="width:100%; background:rgba(255,0,0,0.2); color:#ffaaaa; border:2px solid #ff4444; padding:15px; border-radius:10px; font-weight:900; margin-top:10px;">SUPPRIMER</button>
+        <button onclick="vibrate(); deleteCurrentNote()" style="width:100%; background:rgba(255,0,0,0.2); color:#ffaaaa; border:2px solid #ff4444; padding:15px; border-radius:10px; font-weight:900; margin-top:10px;">SUPPRIMER</button>
     </div>
     <input type="hidden" id="current-note-id">
 </div>
@@ -197,16 +205,25 @@
 <div id="settings-panel" style="position:fixed; inset:0; background:#000; z-index:10000; padding:30px; display:none;">
     <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
         <h2 style="font-weight:900;">PARAMÈTRES</h2>
-        <i data-lucide="x" onclick="this.parentElement.parentElement.style.display='none'" style="cursor:pointer;"></i>
+        <i data-lucide="x" onclick="vibrate(); this.parentElement.parentElement.style.display='none'" style="cursor:pointer;"></i>
     </div>
+
+    <div class="settings-row">
+        <label style="font-weight:900; font-size: 0.8rem;">VIBRATION AU CLIC</label>
+        <label class="switch">
+            <input type="checkbox" id="vibration-toggle" onchange="toggleVibration(this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
     <div class="settings-row">
         <label style="font-weight:900; font-size: 0.8rem;">COULEUR ACCENT</label>
         <input type="color" id="accent-picker" oninput="updateStyle('accent', this.value)" style="width: 50px; height: 30px;">
     </div>
-    <button onclick="exportData()" class="btn-add" style="margin-bottom:10px; background:#fff; color:#000;">SAUVEGARDER</button>
-    <button onclick="document.getElementById('import-file').click()" class="btn-add" style="background:#fff; color:#000;">IMPORTER</button>
+    <button onclick="vibrate(); exportData()" class="btn-add" style="margin-bottom:10px; background:#fff; color:#000;">SAUVEGARDER</button>
+    <button onclick="vibrate(); document.getElementById('import-file').click()" class="btn-add" style="background:#fff; color:#000;">IMPORTER</button>
     <div style="font-size: 0.65rem; font-weight: 700; opacity: 0.6; text-align: center; margin: 15px 0 25px; line-height: 1.4; letter-spacing: 1px;">PENSEZ À FAIRE UNE SAUVEGARDE DANS LES PARAMÈTRES DE TEMPS EN TEMPS POUR GARDER UNE COPIE DE VOS DONNÉES.</div>
-    <button onclick="resetDB()" class="btn-add" style="background:#ff4444; color:#fff; margin-top:5px;">TOUT EFFACER</button>
+    <button onclick="vibrate(); resetDB()" class="btn-add" style="background:#ff4444; color:#fff; margin-top:5px;">TOUT EFFACER</button>
     <input type="file" id="import-file" hidden onchange="importData(this)">
 </div>
 
@@ -215,7 +232,26 @@
     let isSortMode = false;
     let saveTimeout;
     let isDeleting = false; 
+    let vibrationEnabled = false;
     const DB_NAME = "ELITE_NOTES_V2";
+
+    // --- VIBRATION ---
+    function loadVibrationState() {
+        vibrationEnabled = localStorage.getItem('ELITE_NOTE_vibration') === 'true';
+        document.getElementById('vibration-toggle').checked = vibrationEnabled;
+    }
+
+    function toggleVibration(state) {
+        vibrationEnabled = state;
+        localStorage.setItem('ELITE_NOTE_vibration', state);
+        if(state) vibrate();
+    }
+
+    function vibrate() {
+        if (vibrationEnabled && window.navigator.vibrate) {
+            window.navigator.vibrate(10);
+        }
+    }
 
     // --- LOGIQUE ACCENT (IMPORTÉE DE LINKY) ---
     function getLuminance(hex) {
@@ -280,7 +316,7 @@
             const group = document.createElement('div');
             group.className = "category-group";
             const list = filtered.filter(n => (n.cat || 'DIVERS') === cat).sort((a,b) => (a.order||0) - (b.order||0));
-            let html = `<div class="cat-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+            let html = `<div class="cat-header" onclick="vibrate(); this.nextElementSibling.classList.toggle('hidden')">
                 <span>${cat} <span style="opacity:0.5; font-size:0.7em; margin-left:5px;">${list.length}</span></span>
                 <i data-lucide="chevron-down" size="16"></i>
             </div><div class="grid-container">`;
@@ -288,7 +324,7 @@
             list.forEach(n => {
                 const bg = n.color || '#1a1a1a';
                 const textColor = getContrastColor(bg);
-                html += `<div class="note-card" data-id="${n.id}" style="--card-bg:${bg}; --card-text:${textColor}" onclick="openEditor(${n.id})">
+                html += `<div class="note-card" data-id="${n.id}" style="--card-bg:${bg}; --card-text:${textColor}" onclick="vibrate(); openEditor(${n.id})">
                     <div class="note-title">${n.title || 'SANS TITRE'}</div>
                     <div class="note-preview">${(n.content || '').replace(/\n/g, '<br>')}</div>
                     ${isSortMode ? '<div style="position:absolute; bottom:10px; right:10px;"><i data-lucide="grip-vertical" size="16"></i></div>' : ''}
@@ -342,8 +378,6 @@
         }
         document.getElementById('new-cat-input').style.display = 'none';
         panel.style.display = 'flex';
-
-        // SUPPRESSION DU CODE PLEIN ÉCRAN ICI
     }
 
     function updateLiveTheme(hex) {
@@ -370,7 +404,6 @@
         if (!isDeleting) saveNoteDirectly();
         document.getElementById('edit-panel').style.display = 'none';
         document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000000');
-        // SUPPRESSION DU CODE DE SORTIE PLEIN ÉCRAN ICI
     }
 
     function triggerAutoSave() {
@@ -495,6 +528,7 @@
 
     window.onload = () => {
         loadSavedStyles();
+        loadVibrationState();
         refreshNotes();
     };
 </script>
