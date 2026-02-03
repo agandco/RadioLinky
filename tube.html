@@ -342,8 +342,25 @@
         const grid = el.nextElementSibling;
         const icon = el.querySelector('i');
         const isOpen = grid.style.display !== 'none';
+        
+        // Fermer tous les autres accordéons
+        document.querySelectorAll('.grid-container').forEach(g => {
+            if (g !== grid) {
+                g.style.display = 'none';
+                const otherIcon = g.previousElementSibling.querySelector('i');
+                if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+
         grid.style.display = isOpen ? 'none' : 'grid';
         if(icon) icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        
+        // Si on vient d'ouvrir, on aligne l'en-tête en haut
+        if (!isOpen) {
+            setTimeout(() => {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        }
     }
 
     function playTube(yid) {
