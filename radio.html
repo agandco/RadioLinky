@@ -119,12 +119,12 @@
 <div class="app-container">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
     <h1 style="font-weight:900; margin:0;">RADIO <span class="elite-text">ELITE</span></h1>
-        <i data-lucide="settings" onclick="triggerVibe(); toggleSettings(true)" style="cursor:pointer;"></i>
+        <i data-lucide="settings" onclick="cancelAllPress(); triggerVibe(); toggleSettings(true)" style="cursor:pointer;"></i>
     </div>
 
     <div class="nav-tabs">
-        <button class="tab-btn active" id="tab-search" onclick="triggerVibe(); switchTab('search')"><i data-lucide="compass"></i> EXPLORER</button>
-        <button class="tab-btn" id="tab-favs" onclick="triggerVibe(); switchTab('favs')"><i data-lucide="star"></i> FAVORIS</button>
+        <button class="tab-btn active" id="tab-search" onclick="cancelAllPress(); triggerVibe(); switchTab('search')"><i data-lucide="compass"></i> EXPLORER</button>
+        <button class="tab-btn" id="tab-favs" onclick="cancelAllPress(); triggerVibe(); switchTab('favs')"><i data-lucide="star"></i> FAVORIS</button>
     </div>
 
     <div id="section-search">
@@ -136,13 +136,13 @@
 
     <div id="section-favs" style="display:none;">
         <div class="info-tip" id="info-text">POUR MODIFIER APPUYEZ<br>LONGUEMENT SUR UNE RADIO</div>
-        <button onclick="triggerVibe(); openEditForm()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid var(--contrast-border); margin-bottom:20px;">+ AJOUTER MANUELLEMENT</button>
+        <button onclick="cancelAllPress(); triggerVibe(); openEditForm()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:20px; border-radius:15px; font-weight:900; border:2px solid var(--contrast-border); margin-bottom:20px;">+ AJOUTER MANUELLEMENT</button>
         <div id="favs-accordion-container"></div>
     </div>
 </div>
 
-<div id="mini-player" onclick="triggerVibe(); requestFullScreen(); openFullscreen()">
-    <button class="btn-circle btn-mini-play" onclick="event.stopPropagation(); triggerVibe(); togglePlay()">
+<div id="mini-player" onclick="cancelAllPress(); triggerVibe(); requestFullScreen(); openFullscreen()">
+    <button class="btn-circle btn-mini-play" onclick="event.stopPropagation(); cancelAllPress(); triggerVibe(); togglePlay()">
         <i data-lucide="play" id="btn-play-mini" style="color: inherit;"></i>
     </button>
     <div style="flex:1; margin:0 15px; overflow:hidden; pointer-events: none;" class="title-box">
@@ -153,7 +153,7 @@
 
 <div id="fullscreen-player">
     <div id="fullscreen-area" onclick="requestFullScreen()"></div>
-    <div class="btn-switch" onclick="triggerVibe(); switchViz()"><i data-lucide="audio-lines" size="20"></i></div>
+    <div class="btn-switch" onclick="cancelAllPress(); triggerVibe(); switchViz()"><i data-lucide="audio-lines" size="20"></i></div>
     
     <div class="btn-fix-fs" id="btn-fix-fs" onclick="requestFullScreen()"><i data-lucide="maximize" size="20"></i></div>
 
@@ -165,13 +165,13 @@
         <div id="fs-clock" style="color:var(--clock-color); font-weight:700; margin-bottom:15px; letter-spacing: 2px;">00:00:00</div>
         <div class="title-box" style="height:40px;"><span id="fs-title" class="marquee" style="font-size:1.2rem; color:#fff;">Titre Radio</span></div>
     </div> <div style="display:flex; width:100%; justify-content:space-around; align-items:center; margin-top:30px; z-index:10; padding:0 20px;">
-        <i data-lucide="timer" class="ctrl-opt" onclick="triggerVibe(); toggleTimer()" size="30"></i>
-        <button class="btn-circle btn-mini-play" onclick="triggerVibe(); togglePlay()"><i data-lucide="play" id="btn-play-fs" size="30" style="color: inherit;"></i></button>
-        <i data-lucide="share-2" class="ctrl-opt" onclick="triggerVibe(); shareStation()" size="30"></i>
+        <i data-lucide="timer" class="ctrl-opt" onclick="cancelAllPress(); triggerVibe(); toggleTimer()" size="30"></i>
+        <button class="btn-circle btn-mini-play" onclick="cancelAllPress(); triggerVibe(); togglePlay()"><i data-lucide="play" id="btn-play-fs" size="30" style="color: inherit;"></i></button>
+        <i data-lucide="share-2" class="ctrl-opt" onclick="cancelAllPress(); triggerVibe(); shareStation()" size="30"></i>
     </div>
 
     <canvas id="fs-viz"></canvas>
-    <i data-lucide="chevron-down" style="position:absolute; bottom:30px; transform:scale(1); cursor:pointer;" onclick="triggerVibe(); closeFullscreen()"></i>
+    <i data-lucide="chevron-down" style="position:absolute; bottom:30px; transform:scale(1); cursor:pointer;" onclick="cancelAllPress(); triggerVibe(); closeFullscreen()"></i>
 </div>
 
 <div id="edit-panel">
@@ -356,12 +356,19 @@
         req.onsuccess = e => res(e.target.result);
     });
 
+    function cancelAllPress() {
+        clearTimeout(pressTimer);
+        clearTimeout(catPressTimer);
+    }
+
     function startPress(id, station) { 
+        cancelAllPress();
         pressTimer = setTimeout(() => { triggerVibe(); openEditForm(id, station); }, 4000); 
     }
     function cancelPress() { clearTimeout(pressTimer); }
 
     function startCatPress(oldName) {
+        cancelAllPress();
         catPressTimer = setTimeout(() => { triggerVibe(); renameCategory(oldName); }, 4000);
     }
     function cancelCatPress() { clearTimeout(catPressTimer); }
@@ -421,10 +428,10 @@
             card.onmouseup = cancelPress;
             card.ontouchend = cancelPress;
             
-            card.onclick = (e) => { triggerVibe(); playStation(stationObj, card); };
+            card.onclick = (e) => { cancelAllPress(); triggerVibe(); playStation(stationObj, card); };
 
             card.innerHTML = `
-                <i data-lucide="star" class="card-fav-icon ${isFav ? 'is-fav' : ''}" onclick="event.stopPropagation(); triggerVibe(); toggleFav('${s.url_resolved}', '${s.name.replace(/'/g, "\\'")}', '${logoUrl}')"></i>
+                <i data-lucide="star" class="card-fav-icon ${isFav ? 'is-fav' : ''}" onclick="event.stopPropagation(); cancelAllPress(); triggerVibe(); toggleFav('${s.url_resolved}', '${s.name.replace(/'/g, "\\'")}', '${logoUrl}')"></i>
                 <img src="${logoUrl}" class="card-art ${isCurrent && isPlaying ? 'is-spinning' : ''}">
                 <div class="title-box"><span class="marquee">${s.name}</span></div>`;
             container.appendChild(card);
@@ -561,7 +568,7 @@
                     header.ontouchstart = () => startCatPress(cat);
                     header.onmouseup = cancelCatPress;
                     header.ontouchend = cancelCatPress;
-                    header.onclick = () => { triggerVibe(); toggleAccordion(header); };
+                    header.onclick = () => { cancelAllPress(); triggerVibe(); toggleAccordion(header); };
 
                     group.appendChild(header);
 
@@ -576,7 +583,7 @@
                                             data-station-url="${f.url}"
                                             onmousedown="startPress(${f.id})" ontouchstart="startPress(${f.id})"
                                             onmouseup="cancelPress()" ontouchend="cancelPress()"
-                                            onclick='triggerVibe(); playStation(${stationJson}, this)'>
+                                            onclick='cancelAllPress(); triggerVibe(); playStation(${stationJson}, this)'>
                                     <img src="${f.logo}" class="card-art ${isSpinning}">
                                     <div class="title-box"><span class="marquee">${f.name}</span></div>
                                 </div>`}).join('');
@@ -660,7 +667,7 @@
     }
 
     function openEditForm(id = null, station = null) {
-        cancelPress();
+        cancelAllPress();
         document.getElementById('edit-panel').style.display = 'block';
         const select = document.getElementById('f-cat-select');
         const uniqueCats = [...new Set(favorites.map(f => f.cat || 'Général'))].sort((a, b) => a.localeCompare(b));
