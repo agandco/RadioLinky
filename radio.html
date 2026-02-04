@@ -155,7 +155,7 @@
     <div id="fullscreen-area" onclick="requestFullScreen()"></div>
     <div class="btn-switch" onclick="cancelAllPress(); triggerVibe(); switchViz()"><i data-lucide="audio-lines" size="20"></i></div>
     
-    <div class="btn-fix-fs" id="btn-fix-fs" onclick="requestFullScreen()"><i data-lucide="maximize" size="20"></i></div>
+    <div class="btn-fix-fs" id="btn-fix-fs" onclick="requestFullScreen(); triggerVibe();"><i data-lucide="maximize" size="20"></i></div>
 
     <div style="position:relative; width:340px; height:340px; display:flex; align-items:center; justify-content:center; margin-top:10px;">
         <canvas id="viz-circle" width="340" height="340" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
