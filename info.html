@@ -157,8 +157,6 @@
 </marquee>
 
 </p>
-
-
     
     <hr style="margin-top: 20px; margin-bottom: 20px"> 
     <div class="description-box">
@@ -215,24 +213,20 @@
         
     <p style="font-weight: 900; margin-top: 6px; letter-spacing: 1px;">MERCI DE SOUTENIR AGANDCO</p>
     <i data-lucide="arrow-down" opacity="0.5"></i>
-    <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22" style="margin-right:8px; vertical-align: middle;"></i>FAIRE UN DON</button></div>
+    <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22" style="margin-right:8px; vertical-align: middle;"></i>FAIRE UN DON</button></div></div></div>
 
     <hr style="margin-top: 40px;"> 
     <div class="copyright" style="margin-top: 15px">
             2026 &copy; RADIOLINKY<br>DÉVELOPPÉ PAR AGANDCO<br>TOUT DROIT RÉSERVÉ
         </div>
-        <hr style="margin-top: 35px;">
-    </div>
-</div>
+        <hr style="margin-top: 20px;">
 
 <script>
     lucide.createIcons();
-    // Force la création des icônes au démarrage
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
 });
 
-// Sécurité supplémentaire : relance après 500ms au cas où
 setTimeout(() => {
     lucide.createIcons();
 }, 500);
