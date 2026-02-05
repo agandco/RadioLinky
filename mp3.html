@@ -593,8 +593,8 @@
 
                 async function downloadFile() {
     const t = playlist[editingIdx];
-    const newTitle = document.getElementById('edit-title').value.toUpperCase();
-    const newArtist = document.getElementById('edit-artist').value.toUpperCase();
+    const newTitle = document.getElementById('edit-title').value.trim().toUpperCase();
+    const newArtist = document.getElementById('edit-artist').value.trim().toUpperCase();
     const btn = document.getElementById('btn-download');
     
     btn.innerHTML = "GÉNÉRATION...";
@@ -612,11 +612,12 @@
         const arrayBuffer = await record.data.arrayBuffer();
         const writer = new ID3Writer(arrayBuffer);
         
-        // CORRECTION ICI : On passe newArtist directement (pas entre crochets)
-        writer.setFrame('TIT2', newTitle)
-              .setFrame('TPE1', newArtist); 
+        // CORRECTION CRUCIALE : On s'assure que ce sont des chaînes de caractères pures
+        // Certaines versions plantent si on met l'artiste dans un tableau [newArtist]
+        writer.setFrame('TIT2', String(newTitle))
+              .setFrame('TPE1', String(newArtist)); 
         
-        if (selectedCover && selectedCover.startsWith('http')) {
+        if (selectedCover) {
             try {
                 const imgRes = await fetch(selectedCover);
                 const imgBlob = await imgRes.blob();
@@ -628,13 +629,14 @@
                     mime_type: imgBlob.type
                 });
             } catch(e) { 
-                console.error("Image non récupérable pour l'ID3", e); 
+                console.error("Image non récupérable pour les tags ID3", e); 
             }
         }
 
         writer.addTag();
         const finalBlob = writer.getBlob();
 
+        // Téléchargement propre
         const url = URL.createObjectURL(finalBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -642,21 +644,21 @@
         document.body.appendChild(a);
         a.click();
         
-        // Nettoyage
         setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }, 100);
 
     } catch (e) {
-        alert("Erreur : " + e.message);
+        alert("Erreur technique : " + e.message);
         console.error(e);
     } finally {
         btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER';
         btn.disabled = false;
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     }
 }
+
 
 
 
