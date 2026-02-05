@@ -585,19 +585,19 @@
         refreshList();
     }
 
+    // --- DOWNLOAD FIXÉ POUR CHROME MOBILE ---
     async function downloadFile() {
         const t = playlist[editingIdx];
         const newTitle = String(document.getElementById('edit-title').value || "TITRE").trim();
         const newArtist = String(document.getElementById('edit-artist').value || "ARTISTE").trim();
         const btn = document.getElementById('btn-download');
         
-        btn.innerHTML = "PRÉPARATION...";
+        btn.innerHTML = "ENCODAGE...";
         btn.disabled = true;
 
         try {
-            // Vérification forcée du chargement de la lib
             if (typeof ID3Writer === 'undefined') {
-                throw new Error("Outil d'encodage (ID3Writer) non trouvé. Vérifiez votre connexion.");
+                throw new Error("ID3Writer non chargé.");
             }
 
             const db = await openDB();
@@ -606,13 +606,15 @@
                 transaction.objectStore("songs").get(t.filename).onsuccess = e => res(e.target.result);
             });
 
-            if (!record) throw new Error("Fichier source introuvable.");
+            if (!record) throw new Error("Fichier introuvable.");
 
+            // Utilisation d'arrayBuffer() qui est plus stable que les streams sur mobile
             const arrayBuffer = await record.data.arrayBuffer();
             const writer = new ID3Writer(arrayBuffer);
             
-            writer.setFrame('TIT2', newTitle.toUpperCase())
-                  .setFrame('TPE1', [newArtist.toUpperCase()]);
+            // On force le passage en String pour éviter les erreurs charCodeAt
+            writer.setFrame('TIT2', String(newTitle).toUpperCase())
+                  .setFrame('TPE1', [String(newArtist).toUpperCase()]);
             
             if (selectedCover) {
                 try {
@@ -624,6 +626,7 @@
                         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
                         imgBuffer = bytes.buffer;
                     } else {
+                        // Pour les images externes (iTunes), on fetch proprement
                         const imgRes = await fetch(selectedCover);
                         imgBuffer = await imgRes.arrayBuffer();
                     }
@@ -645,7 +648,11 @@
             document.body.appendChild(a);
             a.click();
             
-            setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+            // Nettoyage pour libérer la mémoire mobile
+            setTimeout(() => { 
+                URL.revokeObjectURL(url); 
+                if(a.parentNode) document.body.removeChild(a); 
+            }, 1500);
 
         } catch (e) {
             alert("ERREUR : " + e.message);
