@@ -6,8 +6,11 @@
     <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
     <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
     <title>MP3 ELITE</title>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <script src="https://unpkg.com/browser-id3-writer@4.4.0/dist/browser-id3-writer.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -53,6 +56,7 @@
             align-items: center; 
             justify-content: center; 
             overflow: hidden; 
+            position: relative;
         }
 
         .playing-this { border-color: var(--contrast-border) !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
@@ -81,6 +85,13 @@
             background: var(--bg);
             z-index: 2000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; 
         }
+
+        #tag-panel { position: fixed; inset: 0; background: var(--bg); z-index: 4000; display: none; padding: 25px; overflow-y: auto; }
+        .tag-row { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #fff; }
+        .tag-row input { background: transparent; border: none; color: #fff; width: 100%; font-family: inherit; outline: none; text-transform: uppercase; font-weight: 900; }
+        .cover-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .cover-opt { width: 100%; aspect-ratio: 1; border-radius: 10px; border: 2px solid transparent; object-fit: cover; cursor: pointer;}
+        .cover-selected { border-color: var(--accent) !important; }
 
         .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 20px 0; cursor: pointer; position: relative; }
         .progress-bar { height: 100%; background: var(--accent); border-radius: 10px; width: 0%; transition: width 0.1s linear; }
@@ -129,7 +140,7 @@
 
     </style>
 </head>
-<body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
+<body oncontextmenu='return false;'>
 
 <div class="app-container" id="main-scroll">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
@@ -148,6 +159,27 @@
 
     <input type="file" id="mp3-input" webkitdirectory directory multiple hidden>
     <div id="accordion-container"></div>
+</div>
+
+<div id="tag-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="font-weight:900; margin:0;">ÉDITEUR</h2>
+        <i data-lucide="x" onclick="vibrate(); closeTagPanel()" style="cursor:pointer;"></i>
+    </div>
+    
+    <div style="text-align:center; margin-bottom:20px;">
+        <img id="edit-preview" src="" style="width:150px; height:150px; border-radius:15px; border:2px solid #fff; object-fit:cover;">
+    </div>
+
+    <div class="tag-row"><label style="font-size:10px; opacity:0.5;">TITRE</label><input type="text" id="edit-title"></div>
+    <div class="tag-row"><label style="font-size:10px; opacity:0.5;">ARTISTE</label><input type="text" id="edit-artist"></div>
+
+    <button onclick="vibrate(); searchCovers()" style="width:100%; background:rgba(255,255,255,0.1); color:#fff; padding:15px; border-radius:12px; border:1px solid #fff; font-weight:900; margin-bottom:10px;">CHERCHER POCHETTES (ITUNES)</button>
+    
+    <div id="cover-results" class="cover-grid"></div>
+
+    <button onclick="vibrate(); saveTags()" style="width:100%; background:var(--accent); color:var(--contrast-text); padding:15px; border-radius:12px; border:none; font-weight:900; margin-top:10px;">ENREGISTRER</button>
+    <button id="btn-download" onclick="vibrate(); downloadFile()" style="width:100%; background:transparent; color:#fff; padding:15px; border-radius:12px; border:2px solid #fff; font-weight:900; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:10px;"><i data-lucide="download" size="18"></i> TÉLÉCHARGER</button>
 </div>
 
 <div id="mini-player" onclick="vibrate(); requestFullScreen(); openFullscreen()">
@@ -219,46 +251,116 @@
     let config = { bg: '#000000', accent: '#ffffff', viz: '#000000' };
     let audio = new Audio(), audioCtx, analyser, dataArray;
     let canVibrate = true;
+    let pressTimer, editingIdx = -1, selectedCover = null;
+    let startX, startY;
 
+    // --- UTILS ---
     function vibrate() {
-        if (canVibrate && navigator.vibrate) {
-            navigator.vibrate(40);
-        }
+        if (canVibrate && navigator.vibrate) navigator.vibrate(40);
     }
-
     function toggleVib(val) {
         canVibrate = val;
         localStorage.setItem('MP3_ELITE_VIB', val);
     }
+    function getLuminance(hex) {
+        const rgb = hex.replace(/^#/, '').match(/.{2}/g).map(x => parseInt(x, 16));
+        return (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+    }
 
+    // --- AUDIO HANDLING ---
     audio.ontimeupdate = () => {
-        if (audio.duration) {
+        if (audio.duration && !isNaN(audio.duration)) {
             const pct = (audio.currentTime / audio.duration) * 100;
             document.getElementById('progress').style.width = pct + '%';
         }
     };
-
+    
     function seek(e) {
+        if (!audio.duration) return;
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const pct = x / rect.width;
         audio.currentTime = pct * audio.duration;
     }
 
-    document.addEventListener('fullscreenchange', handleFSChange);
-    document.addEventListener('webkitfullscreenchange', handleFSChange);
-    
-    function handleFSChange() {
-        const isFS = document.fullscreenElement || document.webkitFullscreenElement;
-        const btn = document.getElementById('btn-fix-fs');
-        if (btn) btn.style.display = isFS ? 'none' : 'flex';
+    function playTrack(idx, shouldScroll = false) {
+        currentIndex = idx;
+        const track = playlist[idx];
+        
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = track.url;
+        
+        document.querySelectorAll('.card-art').forEach(img => img.classList.remove('is-spinning'));
+        document.querySelectorAll('.music-card').forEach(c => c.classList.remove('playing-this'));
+        
+        const targetCard = document.getElementById(`card-${idx}`);
+        if(targetCard) {
+            targetCard.classList.add('playing-this');
+            if(shouldScroll) {
+                setTimeout(() => { 
+                    const cardPos = targetCard.getBoundingClientRect().top + window.pageYOffset - 15;
+                    window.scrollTo({ top: cardPos, behavior: 'smooth' });
+                }, 100);
+            }
+        }
+        
+        document.getElementById('mini-art').src = track.cover;
+        document.getElementById('fs-art').src = track.cover;
+        document.getElementById('mini-title').innerText = track.title;
+        document.getElementById('fs-title').innerText = track.title;
+        document.getElementById('fs-artist').innerText = track.artist;
+        
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                updateMediaSession(track);
+                isPlaying = true;
+                updateIcons();
+                if(!audioCtx) initAudio();
+            }).catch(error => {
+                console.log("Lecture bloquée:", error);
+                isPlaying = false;
+                updateIcons();
+            });
+        }
+        
+        setTimeout(checkMarquees, 50);
     }
 
-    function getLuminance(hex) {
-        const rgb = hex.replace(/^#/, '').match(/.{2}/g).map(x => parseInt(x, 16));
-        return (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+    function togglePlay() { 
+        if(!audio.src) return;
+        if (isPlaying) audio.pause(); else audio.play();
+        isPlaying = !isPlaying; 
+        updateIcons(); 
     }
 
+    function updateIcons() {
+        const icon = isPlaying ? 'pause' : 'play';
+        document.getElementById('btn-play-mini').setAttribute('data-lucide', icon);
+        document.getElementById('btn-play-fs').setAttribute('data-lucide', icon);
+        const currentCardArt = document.querySelector('.playing-this .card-art');
+        const miniArt = document.getElementById('mini-art');
+        const fsArt = document.getElementById('fs-art');
+        [currentCardArt, miniArt, fsArt].forEach(img => {
+            if(img) isPlaying ? img.classList.add('is-spinning') : img.classList.remove('is-spinning');
+        });
+        lucide.createIcons();
+    }
+
+    function updateMediaSession(track) {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: track.title, artist: track.artist, album: "Elite MP3 Player", artwork: [{ src: track.cover, sizes: '512x512', type: 'image/png' }]
+            });
+            navigator.mediaSession.setActionHandler('play', () => { vibrate(); togglePlay(); });
+            navigator.mediaSession.setActionHandler('pause', () => { vibrate(); togglePlay(); });
+            navigator.mediaSession.setActionHandler('previoustrack', () => { vibrate(); prevTrack(); });
+            navigator.mediaSession.setActionHandler('nexttrack', () => { vibrate(); nextTrack(); });
+        }
+    }
+
+    // --- DB & FILES ---
     const openDB = () => new Promise(res => {
         let req = indexedDB.open("MP3_ELITE_DB", 2);
         req.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains("songs")) e.target.result.createObjectStore("songs", {keyPath: "name"}); };
@@ -280,48 +382,90 @@
         for(let file of files) {
             const meta = await parseFile(file);
             await db.transaction("songs", "readwrite").objectStore("songs").put({name: file.name, data: file, meta: meta});
-            playlist.push(meta);
-            
             done++;
             let pct = (done / files.length) * 100;
             barFill.style.width = pct + '%';
             countTxt.innerText = `${done}/${files.length}`;
         }
         
-        setTimeout(() => { 
-            loader.style.display = 'none'; 
-            barFill.style.width = '0%'; 
-            location.reload(); 
-        }, 1000);
-        renderUI();
+        refreshList();
+        setTimeout(() => { loader.style.display = 'none'; barFill.style.width = '0%'; }, 1000);
     };
+
+    async function refreshList() {
+        const db = await openDB();
+        db.transaction("songs").objectStore("songs").getAll().onsuccess = (e) => {
+            playlist = [];
+            e.target.result.forEach(item => {
+                const track = {...item.meta};
+                track.url = URL.createObjectURL(item.data);
+                track.originalData = item.data;
+                track.filename = item.name;
+                playlist.push(track);
+            });
+            renderUI();
+        };
+    }
 
     function parseFile(file) {
         return new Promise(resolve => {
-            jsmediatags.read(file, {
-                onSuccess: (tag) => {
-                    let cover = "https://i.imgur.com/vsqN1NZ.png";
-                    if(tag.tags.picture) {
-                        const {data, format} = tag.tags.picture;
-                        cover = `data:${format};base64,${btoa(data.reduce((acc, cur) => acc + String.fromCharCode(cur), ""))}`;
-                    }
-                    resolve({url: URL.createObjectURL(file), title: tag.tags.title || file.name, artist: tag.tags.artist || "Inconnu", cover});
-                },
-                onError: () => resolve({url: URL.createObjectURL(file), title: file.name, artist: "Inconnu", cover: "https://i.imgur.com/vsqN1NZ.png"})
-            });
+            const fallback = {
+                title: file.name.replace('.mp3', '').toUpperCase(), 
+                artist: "ARTISTE INCONNU", 
+                cover: "https://i.imgur.com/vsqN1NZ.png"
+            };
+
+            if (!window.jsmediatags) {
+                resolve(fallback);
+                return;
+            }
+
+            try {
+                window.jsmediatags.read(file, {
+                    onSuccess: (tag) => {
+                        let cover = fallback.cover;
+                        if(tag.tags.picture) {
+                            const {data, format} = tag.tags.picture;
+                            let base64String = "";
+                            for (let i = 0; i < data.length; i++) {
+                                base64String += String.fromCharCode(data[i]);
+                            }
+                            cover = `data:${format};base64,${window.btoa(base64String)}`;
+                        }
+                        resolve({
+                            title: (tag.tags.title || fallback.title).toUpperCase(), 
+                            artist: (tag.tags.artist || fallback.artist).toUpperCase(), 
+                            cover
+                        });
+                    },
+                    onError: () => resolve(fallback)
+                });
+            } catch (e) {
+                resolve(fallback);
+            }
         });
     }
 
+    // --- UI RENDERING ---
     function renderUI() {
         const container = document.getElementById('accordion-container');
         container.innerHTML = "";
         const groups = {};
         playlist.forEach((t, i) => { if(!groups[t.artist]) groups[t.artist] = []; groups[t.artist].push({...t, idx: i}); });
+        
+        if (Object.keys(groups).length === 0) {
+            container.innerHTML = "<div style='text-align:center; opacity:0.5; margin-top:50px;'>AUCUNE MUSIQUE IMPORTÉE</div>";
+            return;
+        }
+
         Object.keys(groups).sort().forEach(artist => {
             const acc = document.createElement('div');
             acc.className = "accordion";
             acc.innerHTML = `<div class="acc-header" onclick="vibrate(); toggleAcc(this)"><span>${artist} (${groups[artist].length})</span><i data-lucide="chevron-down"></i></div>
-                <div class="acc-content">${groups[artist].map(t => `<div class="music-card" id="card-${t.idx}" onclick="vibrate(); playTrack(${t.idx}, true)">
+                <div class="acc-content">${groups[artist].map(t => `
+                <div class="music-card" id="card-${t.idx}" 
+                     onmousedown="startPress(event, ${t.idx})" onmouseup="endPress(event, ${t.idx})"
+                     ontouchstart="startPress(event, ${t.idx})" ontouchend="endPress(event, ${t.idx})">
                 <img src="${t.cover}" class="card-art">
                 <div class="title-box"><span class="marquee">${t.title}</span></div></div>`).join('')}</div>`;
             container.appendChild(acc);
@@ -344,63 +488,209 @@
         }
     }
 
-    function playTrack(idx, shouldScroll = false) {
-        currentIndex = idx;
-        const track = playlist[idx];
-        audio.src = track.url;
-        document.querySelectorAll('.card-art').forEach(img => img.classList.remove('is-spinning'));
-        document.querySelectorAll('.music-card').forEach(c => c.classList.remove('playing-this'));
-        const targetCard = document.getElementById(`card-${idx}`);
-        if(targetCard) {
-            targetCard.classList.add('playing-this');
-            if(shouldScroll) {
-                setTimeout(() => { 
-                    const cardPos = targetCard.getBoundingClientRect().top + window.pageYOffset - 15;
-                    window.scrollTo({ top: cardPos, behavior: 'smooth' });
-                }, 100);
+    // --- EDIT & DOWNLOAD ---
+    function startPress(e, idx) {
+        const touch = e.touches ? e.touches[0] : e;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        pressTimer = setTimeout(() => {
+            vibrate();
+            openEditor(idx);
+            pressTimer = null;
+        }, 800);
+    }
+    
+    function endPress(e, idx) {
+        if(pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+            const touch = e.changedTouches ? e.changedTouches[0] : e;
+            const diffX = Math.abs(touch.clientX - startX);
+            const diffY = Math.abs(touch.clientY - startY);
+            if (diffX < 10 && diffY < 10) playTrack(idx, true);
+        }
+    }
+
+    function openEditor(idx) {
+        editingIdx = idx;
+        const t = playlist[idx];
+        document.getElementById('edit-preview').src = t.cover;
+        document.getElementById('edit-title').value = t.title;
+        document.getElementById('edit-artist').value = t.artist;
+        document.getElementById('cover-results').innerHTML = "";
+        selectedCover = t.cover;
+        document.getElementById('tag-panel').style.display = 'block';
+    }
+
+    function closeTagPanel() { document.getElementById('tag-panel').style.display = 'none'; }
+
+    async function searchCovers() {
+        const title = document.getElementById('edit-title').value;
+        const artist = document.getElementById('edit-artist').value;
+        const query = `${title} ${artist}`;
+        
+        try {
+            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=9`);
+            const data = await res.json();
+            const grid = document.getElementById('cover-results');
+            grid.innerHTML = "";
+            
+            if(data.results.length === 0) {
+                grid.innerHTML = "<p style='grid-column: span 3; font-size: 10px; opacity: 0.5;'>AUCUN RÉSULTAT</p>";
+                return;
             }
-        }
-        document.getElementById('mini-art').src = track.cover;
-        document.getElementById('fs-art').src = track.cover;
-        document.getElementById('mini-title').innerText = track.title;
-        document.getElementById('fs-title').innerText = track.title;
-        document.getElementById('fs-artist').innerText = track.artist;
-        audio.play().then(() => updateMediaSession(track));
-        isPlaying = true; 
-        updateIcons();
-        if(!audioCtx) initAudio();
-        setTimeout(checkMarquees, 50);
-    }
 
-    function updateMediaSession(track) {
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: track.title, artist: track.artist, album: "Elite MP3 Player", artwork: [{ src: track.cover, sizes: '512x512', type: 'image/png' }]
+            data.results.forEach(item => {
+                const imgUrl = item.artworkUrl100.replace('100x100bb', '600x600bb');
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.className = "cover-opt";
+                img.onclick = () => {
+                    vibrate();
+                    document.querySelectorAll('.cover-opt').forEach(i => i.classList.remove('cover-selected'));
+                    img.classList.add('cover-selected');
+                    selectedCover = imgUrl;
+                    document.getElementById('edit-preview').src = imgUrl;
+                    document.getElementById('edit-title').value = item.trackName.toUpperCase();
+                    document.getElementById('edit-artist').value = item.artistName.toUpperCase();
+                };
+                grid.appendChild(img);
             });
-            navigator.mediaSession.setActionHandler('play', () => { vibrate(); togglePlay(); });
-            navigator.mediaSession.setActionHandler('pause', () => { vibrate(); togglePlay(); });
-            navigator.mediaSession.setActionHandler('previoustrack', () => { vibrate(); prevTrack(); });
-            navigator.mediaSession.setActionHandler('nexttrack', () => { vibrate(); nextTrack(); });
+        } catch(e) {
+            alert("Erreur recherche");
         }
     }
 
-    function togglePlay() { 
-        if (isPlaying) audio.pause(); else audio.play();
-        isPlaying = !isPlaying; 
-        updateIcons(); 
+    async function saveTags() {
+        const t = playlist[editingIdx];
+        t.title = document.getElementById('edit-title').value.toUpperCase();
+        t.artist = document.getElementById('edit-artist').value.toUpperCase();
+        t.cover = selectedCover;
+
+        const db = await openDB();
+        await db.transaction("songs", "readwrite").objectStore("songs").put({
+            name: t.filename,
+            data: t.originalData,
+            meta: { title: t.title, artist: t.artist, cover: t.cover }
+        });
+        
+        if(currentIndex === editingIdx) {
+            document.getElementById('mini-art').src = t.cover;
+            document.getElementById('fs-art').src = t.cover;
+            document.getElementById('mini-title').innerText = t.title;
+            document.getElementById('fs-title').innerText = t.title;
+            document.getElementById('fs-artist').innerText = t.artist;
+            updateMediaSession(t);
+        }
+        closeTagPanel();
+        refreshList();
     }
 
-    function updateIcons() {
-        const icon = isPlaying ? 'pause' : 'play';
-        document.getElementById('btn-play-mini').setAttribute('data-lucide', icon);
-        document.getElementById('btn-play-fs').setAttribute('data-lucide', icon);
-        const currentCardArt = document.querySelector('.playing-this .card-art');
-        const miniArt = document.getElementById('mini-art');
-        const fsArt = document.getElementById('fs-art');
-        [currentCardArt, miniArt, fsArt].forEach(img => {
-            if(img) isPlaying ? img.classList.add('is-spinning') : img.classList.remove('is-spinning');
-        });
-        lucide.createIcons();
+                async function downloadFile() {
+        const t = playlist[editingIdx];
+        const newTitle = document.getElementById('edit-title').value.toUpperCase();
+        const newArtist = document.getElementById('edit-artist').value.toUpperCase();
+        const btn = document.getElementById('btn-download');
+        
+        btn.innerHTML = "GÉNÉRATION...";
+        btn.disabled = true;
+
+        try {
+            // 1. On récupère les données fraîches depuis IndexedDB
+            const db = await openDB();
+            const record = await new Promise((res) => {
+                const transaction = db.transaction("songs", "readonly");
+                const store = transaction.objectStore("songs");
+                store.get(t.filename).onsuccess = e => res(e.target.result);
+            });
+
+            if (!record) throw new Error("Source introuvable");
+
+            // 2. On vérifie si la bibliothèque est là (elle est indispensable pour l'image)
+            let Writer = window.ID3Writer || (window.browserId3Writer ? window.browserId3Writer.ID3Writer : null);
+
+            if (!Writer) {
+                alert("Attention : L'outil de modification est bloqué par le navigateur. Le fichier sera téléchargé sans la nouvelle image.");
+                // Si pas de writer, on télécharge au moins le fichier avec le nouveau nom
+                const url = URL.createObjectURL(record.data);
+                forceDownload(url, `${newArtist} - ${newTitle}.mp3`);
+                return;
+            }
+
+            // 3. ON MODIFIE LE CONTENU BINAIRE
+            const arrayBuffer = await record.data.arrayBuffer();
+            const writer = new Writer(arrayBuffer);
+            writer.setFrame('TIT2', newTitle)
+                  .setFrame('TPE1', [newArtist]);
+            
+            if (selectedCover) {
+                try {
+                    const imgRes = await fetch(selectedCover);
+                    const imgBlob = await imgRes.blob();
+                    const imgBuffer = await imgBlob.arrayBuffer();
+                    writer.setFrame('APIC', {
+                        type: 3,
+                        data: imgBuffer,
+                        description: 'Cover',
+                        mime_type: imgBlob.type
+                    });
+                } catch(e) { console.error("Image non récupérable"); }
+            }
+
+            writer.addTag();
+            const finalBlob = writer.getBlob();
+
+            // 4. ON FORCE LE NAVIGATEUR À CRÉER UN NOUVEAU LIEN (Anti-cache)
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                forceDownload(dataUrl, `${newArtist} - ${newTitle}.mp3`);
+            };
+            reader.readAsDataURL(finalBlob);
+
+        } catch (e) {
+            alert("Erreur : " + e.message);
+        } finally {
+            btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER';
+            btn.disabled = false;
+            lucide.createIcons();
+        }
+    }
+
+    // Fonction utilitaire pour éviter les conflits de téléchargement
+    function forceDownload(url, filename) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+        }, 1000);
+    }
+
+
+
+
+    // --- VISUALIZER & SYSTEM ---
+    document.addEventListener('fullscreenchange', handleFSChange);
+    document.addEventListener('webkitfullscreenchange', handleFSChange);
+    function handleFSChange() {
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement;
+        const btn = document.getElementById('btn-fix-fs');
+        if (btn) btn.style.display = isFS ? 'none' : 'flex';
+    }
+
+    function initAudio() {
+        if(audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
+        const source = audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        dataArray = new Uint8Array(analyser.frequencyBinCount); 
+        draw();
     }
 
     function draw() {
@@ -494,14 +784,6 @@
         }
     }
 
-    function initAudio() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
-        audioCtx.createMediaElementSource(audio).connect(analyser);
-        analyser.connect(audioCtx.destination);
-        dataArray = new Uint8Array(analyser.frequencyBinCount); draw();
-    }
-
     function nextTrack() {
         if (isShuffle) playTrack(Math.floor(Math.random() * playlist.length));
         else playTrack((currentIndex + 1) % playlist.length);
@@ -533,11 +815,7 @@
             updateStyle('accent', config.accent); 
             updateStyle('viz', config.viz);
         }
-        const db = await openDB();
-        db.transaction("songs").objectStore("songs").getAll().onsuccess = (e) => {
-            e.target.result.forEach(item => { item.meta.url = URL.createObjectURL(item.data); playlist.push(item.meta); });
-            if(playlist.length) renderUI();
-        };
+        refreshList();
         window.addEventListener('resize', checkMarquees);
     };
     
