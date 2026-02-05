@@ -609,14 +609,14 @@
 
         if (!record) throw new Error("Source introuvable");
 
-        // Utilisation directe de la librairie interne
         const arrayBuffer = await record.data.arrayBuffer();
-        const writer = new ID3Writer(arrayBuffer); // On appelle directement ID3Writer
+        const writer = new ID3Writer(arrayBuffer);
         
+        // CORRECTION ICI : On passe newArtist directement (pas entre crochets)
         writer.setFrame('TIT2', newTitle)
-              .setFrame('TPE1', [newArtist]);
+              .setFrame('TPE1', newArtist); 
         
-        if (selectedCover) {
+        if (selectedCover && selectedCover.startsWith('http')) {
             try {
                 const imgRes = await fetch(selectedCover);
                 const imgBlob = await imgRes.blob();
@@ -627,33 +627,37 @@
                     description: 'Cover',
                     mime_type: imgBlob.type
                 });
-            } catch(e) { console.error("Image non récupérable"); }
+            } catch(e) { 
+                console.error("Image non récupérable pour l'ID3", e); 
+            }
         }
 
         writer.addTag();
         const finalBlob = writer.getBlob();
 
-        // Forçage du téléchargement via FileReader pour éviter le cache
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const dataUrl = e.target.result;
-            const a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = `${newArtist} - ${newTitle}.mp3`;
-            document.body.appendChild(a);
-            a.click();
+        const url = URL.createObjectURL(finalBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${newArtist} - ${newTitle}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Nettoyage
+        setTimeout(() => {
             document.body.removeChild(a);
-        };
-        reader.readAsDataURL(finalBlob);
+            URL.revokeObjectURL(url);
+        }, 100);
 
     } catch (e) {
         alert("Erreur : " + e.message);
+        console.error(e);
     } finally {
         btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER';
         btn.disabled = false;
         lucide.createIcons();
     }
 }
+
 
 
     // --- VISUALIZER & SYSTEM ---
