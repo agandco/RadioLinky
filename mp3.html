@@ -593,8 +593,8 @@
 
                 async function downloadFile() {
     const t = playlist[editingIdx];
-    const newTitle = document.getElementById('edit-title').value.trim().toUpperCase();
-    const newArtist = document.getElementById('edit-artist').value.trim().toUpperCase();
+    const newTitle = document.getElementById('edit-title').value.toUpperCase().trim();
+    const newArtist = document.getElementById('edit-artist').value.toUpperCase().trim();
     const btn = document.getElementById('btn-download');
     
     btn.innerHTML = "GÉNÉRATION...";
@@ -612,8 +612,8 @@
         const arrayBuffer = await record.data.arrayBuffer();
         const writer = new ID3Writer(arrayBuffer);
         
-        // CORRECTION CRUCIALE : On s'assure que ce sont des chaînes de caractères pures
-        // Certaines versions plantent si on met l'artiste dans un tableau [newArtist]
+        // CORRECTION : On passe l'artiste en String simple, pas en tableau.
+        // Certains ID3Writers plantent si on met [newArtist]
         writer.setFrame('TIT2', String(newTitle))
               .setFrame('TPE1', String(newArtist)); 
         
@@ -629,28 +629,27 @@
                     mime_type: imgBlob.type
                 });
             } catch(e) { 
-                console.error("Image non récupérable pour les tags ID3", e); 
+                console.warn("Pochette ignorée car impossible à récupérer :", e);
             }
         }
 
         writer.addTag();
         const finalBlob = writer.getBlob();
 
-        // Téléchargement propre
-        const url = URL.createObjectURL(finalBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${newArtist} - ${newTitle}.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        
-        setTimeout(() => {
+        // Téléchargement forcé par conversion en DataURL pour éviter les bugs mobiles
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const a = document.createElement('a');
+            a.href = e.target.result;
+            a.download = `${newArtist} - ${newTitle}.mp3`;
+            document.body.appendChild(a);
+            a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
+        };
+        reader.readAsDataURL(finalBlob);
 
     } catch (e) {
-        alert("Erreur technique : " + e.message);
+        alert("Détail Erreur : " + e.message);
         console.error(e);
     } finally {
         btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER';
@@ -658,6 +657,7 @@
         if (window.lucide) lucide.createIcons();
     }
 }
+
 
 
 
