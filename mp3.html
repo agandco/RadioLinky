@@ -7,9 +7,9 @@
     <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
     <title>MP3 ELITE</title>
     
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.474.0/lucide.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-    <script src="https://unpkg.com/browser-id3-writer@4.4.0/dist/browser-id3-writer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.min.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -344,7 +344,7 @@
         [currentCardArt, miniArt, fsArt].forEach(img => {
             if(img) isPlaying ? img.classList.add('is-spinning') : img.classList.remove('is-spinning');
         });
-        lucide.createIcons();
+        if(window.lucide) lucide.createIcons();
     }
 
     function updateMediaSession(track) {
@@ -469,7 +469,7 @@
                 <div class="title-box"><span class="marquee">${t.title}</span></div></div>`).join('')}</div>`;
             container.appendChild(acc);
         });
-        setTimeout(checkMarquees, 100); lucide.createIcons();
+        setTimeout(checkMarquees, 100); if(window.lucide) lucide.createIcons();
     }
 
     function toggleAcc(el) {
@@ -586,88 +586,75 @@
     }
 
     async function downloadFile() {
-    const t = playlist[editingIdx];
-    // On force la récupération des valeurs et on s'assure que ce sont des strings
-    const titleInput = document.getElementById('edit-title');
-    const artistInput = document.getElementById('edit-artist');
-    
-    const newTitle = String(titleInput.value || "TITRE").trim();
-    const newArtist = String(artistInput.value || "ARTISTE").trim();
-    const btn = document.getElementById('btn-download');
-    
-    btn.innerHTML = "PRÉPARATION...";
-    btn.disabled = true;
-
-    try {
-        const db = await openDB();
-        const record = await new Promise((res) => {
-            const transaction = db.transaction("songs", "readonly");
-            transaction.objectStore("songs").get(t.filename).onsuccess = e => res(e.target.result);
-        });
-
-        if (!record) throw new Error("Fichier source introuvable dans la base.");
+        const t = playlist[editingIdx];
+        const newTitle = String(document.getElementById('edit-title').value || "TITRE").trim();
+        const newArtist = String(document.getElementById('edit-artist').value || "ARTISTE").trim();
+        const btn = document.getElementById('btn-download');
         
-        // VERIFICATION CRITIQUE : On vérifie si la bibliothèque est bien là
-        if (typeof ID3Writer === 'undefined') {
-            throw new Error("La bibliothèque d'encodage (ID3Writer) n'est pas chargée. Vérifiez votre connexion.");
+        btn.innerHTML = "PRÉPARATION...";
+        btn.disabled = true;
+
+        try {
+            // Vérification forcée du chargement de la lib
+            if (typeof ID3Writer === 'undefined') {
+                throw new Error("Outil d'encodage (ID3Writer) non trouvé. Vérifiez votre connexion.");
+            }
+
+            const db = await openDB();
+            const record = await new Promise((res) => {
+                const transaction = db.transaction("songs", "readonly");
+                transaction.objectStore("songs").get(t.filename).onsuccess = e => res(e.target.result);
+            });
+
+            if (!record) throw new Error("Fichier source introuvable.");
+
+            const arrayBuffer = await record.data.arrayBuffer();
+            const writer = new ID3Writer(arrayBuffer);
+            
+            writer.setFrame('TIT2', newTitle.toUpperCase())
+                  .setFrame('TPE1', [newArtist.toUpperCase()]);
+            
+            if (selectedCover) {
+                try {
+                    let imgBuffer;
+                    if (selectedCover.startsWith('data:')) {
+                        const base64 = selectedCover.split(',')[1];
+                        const binary = window.atob(base64);
+                        const bytes = new Uint8Array(binary.length);
+                        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                        imgBuffer = bytes.buffer;
+                    } else {
+                        const imgRes = await fetch(selectedCover);
+                        imgBuffer = await imgRes.arrayBuffer();
+                    }
+                    writer.setFrame('APIC', {
+                        type: 3,
+                        data: imgBuffer,
+                        description: 'Cover'
+                    });
+                } catch(e) { console.warn("Pochette ignorée."); }
+            }
+
+            writer.addTag();
+            const finalBlob = writer.getBlob();
+            const url = URL.createObjectURL(finalBlob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${newArtist.toUpperCase()} - ${newTitle.toUpperCase()}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+
+        } catch (e) {
+            alert("ERREUR : " + e.message);
+        } finally {
+            btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER LE FICHIER';
+            btn.disabled = false;
+            if(window.lucide) lucide.createIcons();
         }
-
-        const arrayBuffer = await record.data.arrayBuffer();
-        const writer = new ID3Writer(arrayBuffer);
-        
-        // On écrit les tags
-        writer.setFrame('TIT2', newTitle.toUpperCase())
-              .setFrame('TPE1', [newArtist.toUpperCase()]);
-        
-        // Gestion de la pochette
-        if (selectedCover) {
-            try {
-                let imgBuffer;
-                if (selectedCover.startsWith('data:')) {
-                    const base64 = selectedCover.split(',')[1];
-                    const binary = window.atob(base64);
-                    const bytes = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-                    imgBuffer = bytes.buffer;
-                } else {
-                    const imgRes = await fetch(selectedCover);
-                    const imgBlob = await imgRes.blob();
-                    imgBuffer = await imgBlob.arrayBuffer();
-                }
-                writer.setFrame('APIC', {
-                    type: 3,
-                    data: imgBuffer,
-                    description: 'Cover'
-                });
-            } catch(e) { console.warn("Pochette ignorée : " + e.message); }
-        }
-
-        writer.addTag();
-        const finalBlob = writer.getBlob();
-        const url = URL.createObjectURL(finalBlob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${newArtist.toUpperCase()} - ${newTitle.toUpperCase()}.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Nettoyage
-        setTimeout(() => { 
-            URL.revokeObjectURL(url); 
-            document.body.removeChild(a); 
-        }, 1000);
-
-    } catch (e) {
-        console.error(e);
-        alert("ERREUR : " + e.message);
-    } finally {
-        btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER LE FICHIER';
-        btn.disabled = false;
-        if(window.lucide) lucide.createIcons();
     }
-}
-
 
     // --- VISUALIZER & SYSTEM ---
     document.addEventListener('fullscreenchange', handleFSChange);
@@ -796,7 +783,7 @@
     audio.onended = () => { if (loopMode !== 1) nextTrack(); };
     
     window.onload = async () => {
-        lucide.createIcons();
+        if(window.lucide) lucide.createIcons();
         const savedVib = localStorage.getItem('MP3_ELITE_VIB');
         if(savedVib !== null) {
             canVibrate = savedVib === 'true';
