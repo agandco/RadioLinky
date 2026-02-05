@@ -40,12 +40,23 @@
         }
         
         .search-box input { 
-            width: 100%; padding: 18px 20px; border-radius: 18px; 
-            border: 2px solid #fff; 
-            background: rgba(255,255,255,0.1); color: #fff; 
-            font-family: inherit; font-weight: 700; font-size: 1rem;
-            user-select: text; -webkit-user-select: text;
+        width: 100%;
+        padding: 18px 20px;
+        border-radius: 18px; 
+        border: 2px solid #ffffff !important;
+        background: rgba(255,255,255,0.1) !important;
+        color: #ffffff !important;
+        font-family: inherit;
+        font-weight: 700; font-size: 1rem;
+        user-select: text;
+        -webkit-user-select: text;
         }
+
+        .search-box input::placeholder {
+        color: #ffffff !important;
+        opacity: 0.7;
+        }
+
 
         /* BOUTON AJOUT */
         .btn-add { width:100%; background: var(--accent); color: var(--contrast-text); padding:18px; border-radius:15px; font-weight:900; border: 2px solid #fff; margin: 20px 0; cursor: pointer; }
@@ -317,9 +328,10 @@
             group.className = "category-group";
             const list = filtered.filter(n => (n.cat || 'DIVERS') === cat).sort((a,b) => (a.order||0) - (b.order||0));
             let html = `<div class="cat-header" onclick="vibrate(); this.nextElementSibling.classList.toggle('hidden')">
-                <span>${cat} <span style="opacity:0.5; font-size:0.7em; margin-left:5px;">${list.length}</span></span>
-                <i data-lucide="chevron-down" size="16"></i>
-            </div><div class="grid-container">`;
+    <span>${cat} <span style="opacity:0.5; font-size:0.7em; margin-left:5px;">${list.length}</span></span>
+    <i data-lucide="chevron-down" size="16"></i>
+</div><div class="grid-container hidden">`;
+
 
             list.forEach(n => {
                 const bg = n.color || '#1a1a1a';
