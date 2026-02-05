@@ -586,85 +586,88 @@
     }
 
     async function downloadFile() {
-        const t = playlist[editingIdx];
-        // Forcer le type String pour éviter l'erreur .charCodeAt
-        const newTitle = String(document.getElementById('edit-title').value || "TITRE").trim();
-        const newArtist = String(document.getElementById('edit-artist').value || "ARTISTE").trim();
-        const btn = document.getElementById('btn-download');
+    const t = playlist[editingIdx];
+    // On force la récupération des valeurs et on s'assure que ce sont des strings
+    const titleInput = document.getElementById('edit-title');
+    const artistInput = document.getElementById('edit-artist');
+    
+    const newTitle = String(titleInput.value || "TITRE").trim();
+    const newArtist = String(artistInput.value || "ARTISTE").trim();
+    const btn = document.getElementById('btn-download');
+    
+    btn.innerHTML = "PRÉPARATION...";
+    btn.disabled = true;
+
+    try {
+        const db = await openDB();
+        const record = await new Promise((res) => {
+            const transaction = db.transaction("songs", "readonly");
+            transaction.objectStore("songs").get(t.filename).onsuccess = e => res(e.target.result);
+        });
+
+        if (!record) throw new Error("Fichier source introuvable dans la base.");
         
-        btn.innerHTML = "GÉNÉRATION...";
-        btn.disabled = true;
-
-        try {
-            const db = await openDB();
-            const record = await new Promise((res) => {
-                const transaction = db.transaction("songs", "readonly");
-                transaction.objectStore("songs").get(t.filename).onsuccess = e => res(e.target.result);
-            });
-
-            if (!record) throw new Error("Source introuvable");
-            
-            if (typeof ID3Writer === 'undefined') {
-                throw new Error("Outil d'encodage non chargé. Réessayez.");
-            }
-
-            const arrayBuffer = await record.data.arrayBuffer();
-            const writer = new ID3Writer(arrayBuffer);
-            
-            // Écriture sécurisée des tags texte
-            writer.setFrame('TIT2', newTitle.toUpperCase())
-                  .setFrame('TPE1', [newArtist.toUpperCase()]);
-            
-            // Gestion sécurisée de la pochette
-            if (selectedCover) {
-                try {
-                    let imgBuffer;
-                    if (selectedCover.startsWith('data:')) {
-                        const base64 = selectedCover.split(',')[1];
-                        const binary = window.atob(base64);
-                        const len = binary.length;
-                        const bytes = new Uint8Array(len);
-                        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
-                        imgBuffer = bytes.buffer;
-                    } else if (selectedCover.startsWith('http')) {
-                        const imgRes = await fetch(selectedCover);
-                        const imgBlob = await imgRes.blob();
-                        imgBuffer = await imgBlob.arrayBuffer();
-                    }
-
-                    if (imgBuffer) {
-                        writer.setFrame('APIC', {
-                            type: 3,
-                            data: imgBuffer,
-                            description: 'Cover'
-                        });
-                    }
-                } catch(e) { console.warn("Image ignorée : " + e.message); }
-            }
-
-            writer.addTag();
-            const finalBlob = writer.getBlob();
-            const url = URL.createObjectURL(finalBlob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${newArtist.toUpperCase()} - ${newTitle.toUpperCase()}.mp3`;
-            document.body.appendChild(a);
-            a.click();
-            
-            setTimeout(() => { 
-                URL.revokeObjectURL(url); 
-                document.body.removeChild(a); 
-            }, 1000);
-
-        } catch (e) {
-            alert("Erreur critique : " + e.message);
-        } finally {
-            btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER LE FICHIER';
-            btn.disabled = false;
-            lucide.createIcons();
+        // VERIFICATION CRITIQUE : On vérifie si la bibliothèque est bien là
+        if (typeof ID3Writer === 'undefined') {
+            throw new Error("La bibliothèque d'encodage (ID3Writer) n'est pas chargée. Vérifiez votre connexion.");
         }
+
+        const arrayBuffer = await record.data.arrayBuffer();
+        const writer = new ID3Writer(arrayBuffer);
+        
+        // On écrit les tags
+        writer.setFrame('TIT2', newTitle.toUpperCase())
+              .setFrame('TPE1', [newArtist.toUpperCase()]);
+        
+        // Gestion de la pochette
+        if (selectedCover) {
+            try {
+                let imgBuffer;
+                if (selectedCover.startsWith('data:')) {
+                    const base64 = selectedCover.split(',')[1];
+                    const binary = window.atob(base64);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                    imgBuffer = bytes.buffer;
+                } else {
+                    const imgRes = await fetch(selectedCover);
+                    const imgBlob = await imgRes.blob();
+                    imgBuffer = await imgBlob.arrayBuffer();
+                }
+                writer.setFrame('APIC', {
+                    type: 3,
+                    data: imgBuffer,
+                    description: 'Cover'
+                });
+            } catch(e) { console.warn("Pochette ignorée : " + e.message); }
+        }
+
+        writer.addTag();
+        const finalBlob = writer.getBlob();
+        const url = URL.createObjectURL(finalBlob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${newArtist.toUpperCase()} - ${newTitle.toUpperCase()}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Nettoyage
+        setTimeout(() => { 
+            URL.revokeObjectURL(url); 
+            document.body.removeChild(a); 
+        }, 1000);
+
+    } catch (e) {
+        console.error(e);
+        alert("ERREUR : " + e.message);
+    } finally {
+        btn.innerHTML = '<i data-lucide="download"></i> TÉLÉCHARGER LE FICHIER';
+        btn.disabled = false;
+        if(window.lucide) lucide.createIcons();
     }
+}
+
 
     // --- VISUALIZER & SYSTEM ---
     document.addEventListener('fullscreenchange', handleFSChange);
