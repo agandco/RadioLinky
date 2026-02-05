@@ -139,10 +139,34 @@
             vertical-align: middle;
             margin: 0 5px;
         }
-        marquee {
-    display: inline-block;
-    vertical-align: middle;
+        /* Le conteneur qui cache ce qui dépasse */
+.marquee-container {
     width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+/* Le texte qui bouge */
+.marquee-content {
+    display: inline-block;
+    padding-left: 100%; /* Démarre hors écran à droite */
+    animation: scroll-left 20s linear infinite; /* 20s = vitesse */
+}
+
+/* L'animation elle-même */
+@keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Style des icônes dans le défilement */
+.marquee-content i {
+    vertical-align: middle;
+    margin: 0 8px;
+}
+
 }
 
 
@@ -155,14 +179,14 @@
     <h2 style="font-weight:900; margin: 20px 0 5px 0; opacity: 0.9;">BIENVENUE SUR<br>RADIOLINKY</h2>
     <h2 class="elite-text" style="font-size: 1.6rem; margin:0;">ELITE</h2>
     
-    <p style="width: 100%; opacity: 1; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 10px; margin-top: 30px">
-    <marquee scrollamount="5">
-    <i data-lucide="sparkles" size="22" style="margin-right:8px; vertical-align: middle;"></i>
-    <mark>&nbsp;<b><u>Nouveautés</u> : Application TUBE, le gestionnaire de vidéos YouTube… Application NOTE, le gestionnaire de notes personnelles… Application CALCUL, la calculatrice… Nouveaux visualiseurs </b>&nbsp;</mark>
-    <i data-lucide="sparkles" size="22" style="margin-left:8px; vertical-align: middle;"></i>
-</marquee>
+    <div class="marquee-container" style="opacity: 1; font-size: 0.75rem; letter-spacing: 1px;">
+    <div class="marquee-content">
+        <i data-lucide="sparkles" style="margin-right:8px; vertical-align: middle;"></i>
+        <mark>&nbsp;<b><u>Nouveautés</u> : Application TUBE, le gestionnaire de vidéos YouTube… Application NOTE, le gestionnaire de notes personnelles… Application CALCUL, la calculatrice… Nouveaux visualiseurs </b>&nbsp;</mark>
+        <i data-lucide="sparkles" style="margin-left:8px; vertical-align: middle;"></i>
+    </div>
+</div>
 
-</p>
     
     <hr style="margin-top: 20px; margin-bottom: 20px"> 
     <div class="description-box">
