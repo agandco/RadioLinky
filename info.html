@@ -127,6 +127,19 @@
             line-height: 1.5;
         }
         img { margin-top:5px; }
+        mark { background : #fff;
+        border-radius: 10px;}
+        
+                /* Force l'affichage des icônes dans le texte */
+        i[data-lucide] {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+            vertical-align: middle;
+            margin: 0 5px;
+        }
+
     </style>
 </head>
     <body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
@@ -136,7 +149,16 @@
     <h2 style="font-weight:900; margin: 20px 0 5px 0; opacity: 0.9;">BIENVENUE SUR<br>RADIOLINKY</h2>
     <h2 class="elite-text" style="font-size: 1.6rem; margin:0;">ELITE</h2>
     
-    <p style="opacity: 0.8; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 10px; margin-top: 30px"><marquee>Nouveautés sur RADIOLINKY ELITE : Application TUBE, le gestionnaire de vidéos YouTube – Application NOTE, le gestionnaire de notes personnelles – Application CALCUL, la calculatrice – Nouveaux visualiseurs</marquee></p>
+    <p style="opacity: 1; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 10px; margin-top: 30px">
+    <marquee scrollamount="5">
+    <i data-lucide="sparkles" size="22" style="margin-right:8px; vertical-align: middle;"></i>
+    <mark>&nbsp;<b><u>Nouveautés</u> : Application TUBE, le gestionnaire de vidéos YouTube… Application NOTE, le gestionnaire de notes personnelles… Application CALCUL, la calculatrice… Nouveaux visualiseurs </b>&nbsp;</mark>
+    <i data-lucide="sparkles" size="22" style="margin-left:8px; vertical-align: middle;"></i>
+</marquee>
+
+</p>
+
+
     
     <hr style="margin-top: 20px; margin-bottom: 20px"> 
     <div class="description-box">
@@ -145,40 +167,40 @@
         
         <a href="radio.html" class="full-link">
             <div class="app-link">
-                <div class="icon-text"><i data-lucide="radio" size="22"></i> <b>RADIO</b></div>
+                <div class="icon-text"><i data-lucide="radio" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>RADIO</b></div>
                 <span style="font-size: 0.75rem; opacity: 0.8;">LE LECTEUR DE RADIO EN LIGNE<br>& LE GESTIONNAIRE DE FAVORIS</span>
             </div>
         </a>
 
         <a href="mp3.html" class="full-link">
             <div class="app-link">
-                <div class="icon-text"><i data-lucide="music" size="22"></i> <b>MP3</b></div>
+                <div class="icon-text"><i data-lucide="music" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>MP3</b></div>
                 <span style="font-size: 0.75rem; opacity: 0.8;">LE LECTEUR MP3 PERFORMANT</span>
             </div>
         </a>
         
         <a href="tube.html" class="full-link">
             <div class="app-link">
-                <div class="icon-text"><i data-lucide="youtube" size="22"></i> <b>TUBE</b></div>
+                <div class="icon-text"><i data-lucide="youtube" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>TUBE</b></div>
                 <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE VIDÉOS YOUTUBE</span>
             </div>
         </a>
         
         <a href="linky.html" class="full-link">
             <div class="app-link">
-                <div class="icon-text"><i data-lucide="link" size="22"></i> <b>LINKY</b></div>
+                <div class="icon-text"><i data-lucide="link" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>LINKY</b></div>
                 <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE LIENS PERSONNEL</span>
             </div>
         </a>
         <a href="note.html" class="full-link">
             <div class="app-link">
-                <div class="icon-text"><i data-lucide="sticky-note" size="22"></i> <b>NOTE</b></div>
+                <div class="icon-text"><i data-lucide="sticky-note" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>NOTE</b></div>
                 <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE NOTES PERSONNELLES</span>
             </div>
         </a>
         <a href="calcul.html" class="full-link">
             <div class="app-link">
-                <div class="icon-text"><i data-lucide="calculator" size="22"></i> <b>CALCUL</b></div>
+                <div class="icon-text"><i data-lucide="calculator" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>CALCUL</b></div>
                 <span style="font-size: 0.75rem; opacity: 0.8;">LA CALCULATRICE</span>
             </div>
         </a>
@@ -193,7 +215,7 @@
         
     <p style="font-weight: 900; margin-top: 6px; letter-spacing: 1px;">MERCI DE SOUTENIR AGANDCO</p>
     <i data-lucide="arrow-down" opacity="0.5"></i>
-    <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22"></i>FAIRE UN DON</button></div>
+    <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22" style="margin-right:8px; vertical-align: middle;"></i>FAIRE UN DON</button></div>
 
     <hr style="margin-top: 40px;"> 
     <div class="copyright" style="margin-top: 15px">
@@ -205,6 +227,16 @@
 
 <script>
     lucide.createIcons();
+    // Force la création des icônes au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+});
+
+// Sécurité supplémentaire : relance après 500ms au cas où
+setTimeout(() => {
+    lucide.createIcons();
+}, 500);
+
 </script>
 </center>
 </body>
