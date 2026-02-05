@@ -70,7 +70,7 @@
             display: block;
             color: #fff;
             margin: 10px 0;
-            border: 1px solid rgba(255,255,255,0.5);
+            border: 2px solid #fff;
             padding: 12px; 
             border-radius: 12px;
             width: 100%;
@@ -87,9 +87,9 @@
         .app-link b { font-size: 1.1rem; display: block; margin-bottom: 5px; }
 
         hr {
-            width: 120px; 
+            width: 100%; 
             border: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.3); 
+            border-top: 2px dashed rgba(255, 255, 255, 0.3); 
             margin: 20px auto; 
         }
 
@@ -102,7 +102,7 @@
             color: #000;
             background: #fff;
             font-weight: 900;
-            border: none;
+            border: 2px solid blue;
             cursor: pointer;
             font-family: inherit;
             box-shadow: 0 4px 15px rgba(255,255,255,0.1);
@@ -118,11 +118,10 @@
 
         p { margin: 8px 0; }
 
-        /* Style pour le copyright */
         .copyright {
             margin-top: 5px; 
             font-size: 0.6rem;
-            opacity: 0.5;
+            opacity: 0.7;
             letter-spacing: 1px;
             width: 100%;
             line-height: 1.5;
@@ -137,10 +136,9 @@
     <h2 style="font-weight:900; margin: 20px 0 5px 0; opacity: 0.9;">BIENVENUE SUR<br>RADIOLINKY</h2>
     <h2 class="elite-text" style="font-size: 1.6rem; margin:0;">ELITE</h2>
     
-    <hr style="width: 120px; margin-top: 30px;"> 
-    <p style="opacity: 0.8; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 5px;"><marquee>Nouveautés sur RADIOLINKY ELITE : Application TUBE, le gestionnaire de vidéos YouTube – Application NOTE, le gestionnaire de notes personnelles – Application CALCUL, la calculatrice – Nouveaux visualiseurs</marquee></p>
+    <p style="opacity: 0.8; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 10px; margin-top: 30px"><marquee>Nouveautés sur RADIOLINKY ELITE : Application TUBE, le gestionnaire de vidéos YouTube – Application NOTE, le gestionnaire de notes personnelles – Application CALCUL, la calculatrice – Nouveaux visualiseurs</marquee></p>
     
-    <hr style="width: 120px; margin-top: 20px;"> 
+    <hr style="margin-top: 20px; margin-bottom: 20px"> 
     <div class="description-box">
         <p style="opacity: 0.8; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 5px;">LES APPLICATIONS DU MENU</p>
     <i data-lucide="arrow-down" opacity="0.5"></i>
@@ -185,7 +183,7 @@
             </div>
         </a>
         
-    <hr style="width: 120px; margin-top: 35px;">
+    <hr style="margin-top: 30px;">
         <p style="margin-top: 15px; font-size: 0.85rem; font-weight: 700;">
             RADIOLINKY : UN PROJET INDÉPENDANT
         </p>
@@ -197,14 +195,14 @@
     <i data-lucide="arrow-down" opacity="0.5"></i>
     <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22"></i>FAIRE UN DON</button></div>
 
-        <hr style="width: 120px; margin-top: 30px;"> 
-        
-        <div class="copyright">
+    <hr style="margin-top: 40px;"> 
+    <div class="copyright" style="margin-top: 15px">
             2026 &copy; RADIOLINKY<br>DÉVELOPPÉ PAR AGANDCO<br>TOUT DROIT RÉSERVÉ
         </div>
+        <hr style="margin-top: 35px;">
     </div>
 </div>
-<hr style="width: 120px; margin-top: 20px;">
+
 <script>
     lucide.createIcons();
 </script>
