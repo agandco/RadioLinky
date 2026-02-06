@@ -216,11 +216,8 @@
         let text = document.getElementById('weather-story-content').innerText;
         
         // NETTOYAGE VOCAL PREMIUM
-        // 1. On remplace le verbe "est" par un son "é" pour éviter la direction "Est"
         text = text.replace(/ est /gi, " é ");
-        // 2. On supprime les emojis (🧥, 🧣, etc.) pour ne pas qu'ils soient lus
         text = text.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDDFF]/g, '');
-        // 3. Prononciation des unités
         text = text.replace(/km\/h/gi, " kilomètres heure");
         text = text.replace(/°C/g, " degrés Celsius");
         text = text.replace(/%/g, " pour cent");
@@ -313,9 +310,9 @@
         const descDemain = (codes[tomorrowCode] ? codes[tomorrowCode][0] : "variable").toLowerCase();
         const fTime = (t) => t.split('T')[1];
         
-        // TEXTE COMPLET ET PREMIUM
+        // TEXTE COMPLET ET PREMIUM (CORRIGÉ AVEC ESPACES ET "À")
         const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. IL EST ACTUELLEMENT <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b>.<br> LA TEMPÉRATURE RELEVÉE EST DE <b>${Math.round(temp)}°C</b>, AVEC UN TAUX D'HUMIDITÉ DE <b>${data.relative_humidity_2m}%</b>.<br> UN VENT DE <b>${Math.round(wind)} KM/H</b> AFFECTE LA VILLE DE <b>${name}</b>.<br><br> ${conseil}<br><br>
-        <span style="opacity:0.8; font-size:0.8rem;">🌅 <b>${fTime(daily.sunrise[0])}</b> | 🌇 <b>${fTime(daily.sunset[0])}</b></span><br>
+        <span style="opacity:0.8; font-size:0.8rem;">🌅 LEVER DU SOLEIL À <b>${fTime(daily.sunrise[0])}</b> | 🌇 COUCHER DU SOLEIL À <b>${fTime(daily.sunset[0])}</b></span><br>
         LES PRÉVISIONS POUR DEMAIN INDIQUENT <b>${descDemain}</b> AVEC UNE TEMPÉRATURE MAXIMALE DE <b>${Math.round(daily.temperature_2m_max[1])}°C</b>.`;
         
         document.getElementById('weather-story-content').innerHTML = storyText;
