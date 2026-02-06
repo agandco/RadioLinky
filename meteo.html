@@ -158,7 +158,6 @@
         loadVibrationState();
         lucide.createIcons();
         
-        // AU CHARGEMENT : Priorité aux coordonnées stockées pour éviter Peoria
         const savedLat = localStorage.getItem('ELITE_METEO_lat');
         const savedLon = localStorage.getItem('ELITE_METEO_lon');
         const savedName = localStorage.getItem('ELITE_METEO_lastcity');
@@ -198,10 +197,9 @@
         try {
             const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,sunrise,sunset&timezone=auto`);
             const wData = await wRes.json();
-            showStatus('success', 'MISE À JOUR...');
+            showStatus('success', 'MISE À JOUR RÉUSSIE');
             displayWeather(name, wData);
             
-            // SAUVEGARDE CRITIQUE : On stocke les coordonnées exactes
             localStorage.setItem('ELITE_METEO_lat', lat);
             localStorage.setItem('ELITE_METEO_lon', lon);
             localStorage.setItem('ELITE_METEO_lastcity', name);
@@ -216,6 +214,13 @@
             return;
         }
         let text = document.getElementById('weather-story-content').innerText;
+        
+        // CORRECTION VOCALE : On remplace les abréviations pour le haut-parleur
+        text = text.replace(/km\/h/gi, " kilomètres heure");
+        text = text.replace(/°C/g, " degrés Celsius");
+        text = text.replace(/max de/gi, "température maximale de");
+        text = text.replace(/%/g, " pour cent");
+
         const utter = new SpeechSynthesisUtterance(text);
         utter.lang = 'fr-FR';
         utter.rate = 0.9;
@@ -245,7 +250,6 @@
         const city = document.getElementById('city-input').value.trim();
         if(!city) return;
         try {
-            // RECHERCHE PAR NOM : Uniquement si l'utilisateur tape manuellement
             const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=fr&countrycodes=fr&format=json`);
             const geoData = await geoRes.json();
             if(!geoData.results) { showStatus('error', 'VILLE INTROUVABLE'); return; }
@@ -293,21 +297,22 @@
         const wind = data.wind_speed_10m;
         const tomorrowCode = daily.weather_code[1];
 
-        if (code >= 51 || tomorrowCode >= 51) { conseil = "🧥 UN IMPERMÉABLE ET UN PARAPLUIE SONT CONSEILLÉS."; }
-        else if (temp <= 8) { conseil = "🧣 IL FAIT FROID : SORTEZ LE GROS MANTEAU."; }
+        if (code >= 51 || tomorrowCode >= 51) { conseil = "🧥 UN IMPERMÉABLE ET UN PARAPLUIE SONT INDISPENSABLES."; }
+        else if (temp <= 8) { conseil = "🧣 IL FAIT FROID : SORTEZ LE GROS MANTEAU ET L'ÉCHARPE."; }
         else if (temp <= 14) { conseil = "🧥 UNE VESTE OU UN PULL SERONT PARFAITS."; }
-        else if (temp < 20) { conseil = "👕 UN PULL LÉGER POURRAIT ÊTRE UTILE."; }
-        else if (wind > 35) { conseil = "🌬️ ATTENTION AU VENT FORT : COUVREZ-VOUS."; }
-        else if (temp >= 25) { conseil = "👕 T-SHIRT ET LUNETTES DE SOLEIL !"; }
+        else if (temp < 20) { conseil = "🧥 UN PULL LÉGER POURRAIT ÊTRE UTILE."; }
+        else if (wind > 35) { conseil = "🌬️ ATTENTION AU VENT FORT : COUVREZ-VOUS BIEN."; }
+        else if (temp >= 25) { conseil = "👕 T-SHIRT ET LUNETTES DE SOLEIL DE RIGUEUR !"; }
 
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
         const dateStr = now.toLocaleDateString('fr-FR', options);
         const descDemain = (codes[tomorrowCode] ? codes[tomorrowCode][0] : "variable").toLowerCase();
         const fTime = (t) => t.split('T')[1];
         
-        const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. C'EST <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b>.<br> LA TEMPÉRATURE EST DE <b>${Math.round(temp)}°C</b> AVEC <b>${data.relative_humidity_2m}%</b> D'HUMIDITÉ.<br> LE VENT SOUFFLE À <b>${Math.round(wind)} KM/H</b> SUR <b>${name}</b>.<br><br> ${conseil}<br><br>
+        // RETOUR AU TEXTE COMPLET ET DÉTAILLÉ
+        const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. C'EST <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b> ACTUELLEMENT.<br> LA TEMPÉRATURE RELEVÉE EST DE <b>${Math.round(temp)}°C</b>, AVEC UN TAUX D'HUMIDITÉ DE <b>${data.relative_humidity_2m}%</b>.<br> UN VENT DE <b>${Math.round(wind)} KM/H</b> AFFECTE LA VILLE DE <b>${name}</b>.<br><br> ${conseil}<br><br>
         <span style="opacity:0.8; font-size:0.8rem;">🌅 <b>${fTime(daily.sunrise[0])}</b> | 🌇 <b>${fTime(daily.sunset[0])}</b></span><br>
-        DEMAIN : <b>${descDemain}</b> AVEC UN MAX DE <b>${Math.round(daily.temperature_2m_max[1])}°C</b>.`;
+        LES PRÉVISIONS POUR DEMAIN INDIQUENT <b>${descDemain}</b> AVEC UNE TEMPÉRATURE MAXIMALE DE <b>${Math.round(daily.temperature_2m_max[1])}°C</b>.`;
         
         document.getElementById('weather-story-content').innerHTML = storyText;
     }
