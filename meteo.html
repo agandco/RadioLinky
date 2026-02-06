@@ -157,10 +157,15 @@
         loadSavedStyles();
         loadVibrationState();
         lucide.createIcons();
-        const lastCity = localStorage.getItem('ELITE_METEO_lastcity');
-        if(lastCity) {
-            document.getElementById('city-input').value = lastCity;
-            fetchWeather();
+        
+        // AU CHARGEMENT : Priorité aux coordonnées stockées pour éviter Peoria
+        const savedLat = localStorage.getItem('ELITE_METEO_lat');
+        const savedLon = localStorage.getItem('ELITE_METEO_lon');
+        const savedName = localStorage.getItem('ELITE_METEO_lastcity');
+
+        if(savedLat && savedLon) {
+            document.getElementById('city-input').value = savedName || "";
+            fetchWeatherCoord(savedLat, savedLon, savedName || "MA POSITION");
         }
     };
 
@@ -180,10 +185,12 @@
                     const city = data.address.city || data.address.town || data.address.village || data.address.municipality || "MA POSITION";
                     document.getElementById('city-input').value = city;
                     fetchWeatherCoord(lat, lon, city);
-                } catch (e) { showStatus('error', 'ERREUR GPS'); }
+                } catch (e) { 
+                    fetchWeatherCoord(lat, lon, "MA POSITION"); 
+                }
             },
             (error) => { showStatus('error', 'GPS REFUSÉ'); },
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
 
@@ -193,7 +200,10 @@
             const wData = await wRes.json();
             showStatus('success', 'MISE À JOUR...');
             displayWeather(name, wData);
-            // Sauvegarde le nom exact pour éviter le saut au rafraîchissement
+            
+            // SAUVEGARDE CRITIQUE : On stocke les coordonnées exactes
+            localStorage.setItem('ELITE_METEO_lat', lat);
+            localStorage.setItem('ELITE_METEO_lon', lon);
             localStorage.setItem('ELITE_METEO_lastcity', name);
         } catch (err) { showStatus('error', 'ERREUR RÉSEAU'); }
     }
@@ -222,7 +232,6 @@
         textDiv.innerText = message;
         if(type === 'error') {
             iconDiv.innerHTML = '<i data-lucide="frown" style="width:35px; height:35px; color:#ff4444;"></i>';
-            document.getElementById('weather-result').style.display = 'none';
         } else if(type === 'loading') {
             iconDiv.innerHTML = '<i data-lucide="map-pin" class="anim-cloud" style="width:35px; height:35px; color:#fff;"></i>';
         } else {
@@ -236,7 +245,7 @@
         const city = document.getElementById('city-input').value.trim();
         if(!city) return;
         try {
-            // AJOUT DE &countrycodes=fr POUR EVITER PEORIA ET LES USA
+            // RECHERCHE PAR NOM : Uniquement si l'utilisateur tape manuellement
             const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=fr&countrycodes=fr&format=json`);
             const geoData = await geoRes.json();
             if(!geoData.results) { showStatus('error', 'VILLE INTROUVABLE'); return; }
@@ -284,7 +293,6 @@
         const wind = data.wind_speed_10m;
         const tomorrowCode = daily.weather_code[1];
 
-        // LOGIQUE CORRIGÉE : Pas de gros manteau au-dessus de 8°C
         if (code >= 51 || tomorrowCode >= 51) { conseil = "🧥 UN IMPERMÉABLE ET UN PARAPLUIE SONT CONSEILLÉS."; }
         else if (temp <= 8) { conseil = "🧣 IL FAIT FROID : SORTEZ LE GROS MANTEAU."; }
         else if (temp <= 14) { conseil = "🧥 UNE VESTE OU UN PULL SERONT PARFAITS."; }
