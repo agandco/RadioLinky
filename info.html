@@ -17,6 +17,8 @@
         /* Ta règle de base : TOUT en majuscules */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; text-transform: uppercase;}
         
+        a { color:#fff; }
+        
         body, html { 
             margin: 0; 
             padding: 0; 
@@ -102,7 +104,22 @@
             color: #000;
             background: #fff;
             font-weight: 900;
-            border: 2px solid blue;
+            border: 3px solid blue;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        }
+        .btn-mail {
+            width: 100%;
+            max-width: 250px;
+            padding: 18px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            color: #fff;
+            background: #000;
+            font-weight: 900;
+            border: 2px solid #fff;
             cursor: pointer;
             font-family: inherit;
             box-shadow: 0 4px 15px rgba(255,255,255,0.1);
@@ -182,7 +199,7 @@
     <div class="marquee-container" style="opacity: 1; font-size: 0.75rem; letter-spacing: 1px;">
     <div class="marquee-content">
         <i data-lucide="sparkles" style="margin-right:8px; vertical-align: middle;"></i>
-        <mark>&nbsp;<b><u>Nouveautés</u> : Application TUBE, le gestionnaire de vidéos YouTube… Application NOTE, le gestionnaire de notes personnelles… Application CALCUL, la calculatrice… Nouveaux visualiseurs </b>&nbsp;</mark>
+        <mark>&nbsp;<b><u>Nouveautés de Janvier/Février </u> : Application TUBE, le gestionnaire de vidéos YouTube… Application NOTE, le gestionnaire de notes personnelles… Application CALCUL, la calculatrice... Application CLOCK, l'horloge de bureau et chrono... L'application METEO... Nouveaux visualiseurs dans RADIO/MP3</b>&nbsp;</mark>
         <i data-lucide="sparkles" style="margin-left:8px; vertical-align: middle;"></i>
     </div>
 </div>
@@ -207,18 +224,14 @@
             </div>
         </a>
         
-        <a href="tube.html" class="full-link">
-            <div class="app-link">
-                <div class="icon-text"><i data-lucide="youtube" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>TUBE</b></div>
-                <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE VIDÉOS YOUTUBE</span>
-            </div>
-        </a>
-        
         <a href="linky.html" class="full-link">
             <div class="app-link">
                 <div class="icon-text"><i data-lucide="link" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>LINKY</b></div>
-                <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE LIENS PERSONNEL</span>
-            </div>
+                <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE LIENS PERSONNEL</span></div></a>
+            <a href="tube.html" class="full-link">
+            <div class="app-link">
+                <div class="icon-text"><i data-lucide="youtube" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>TUBE</b></div>
+                <span style="font-size: 0.75rem; opacity: 0.8;">LE GESTIONNAIRE DE VIDÉOS YOUTUBE</span></div></a>
             <a href="clock.html" class="full-link">
             <div class="app-link">
                 <div class="icon-text"><i data-lucide="clock" size="22" style="margin-right:8px; vertical-align: middle;"></i> <b>CLOCK</b></div>
@@ -254,8 +267,16 @@
         
     <p style="font-weight: 900; margin-top: 6px; letter-spacing: 1px;">MERCI DE SOUTENIR AGANDCO</p>
     <i data-lucide="arrow-down" opacity="0.5"></i>
-    <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22" style="margin-right:8px; vertical-align: middle;"></i>FAIRE UN DON</button></div></div></div>
+    <button class="btn-don" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56', '_blank')"><div class="icon-text"><i data-lucide="heart" size="22" style="margin-right:8px; vertical-align: middle;"></i>FAIRE UN DON</button></div>
+    <hr style="margin-top: 40px; width:100%">
+    <button class="btn-mail">
+        <a href="mailto:agandco.contact@gmail.com?subject=Contact depuis Radiolinky" class="nav-link">
+        <i data-lucide="mail" style="margin-right:18px; vertical-align: middle;"></i>CONTACT
+        </a></button>
+    <i data-lucide="arrow-up" opacity="0.5"></i>
+        <p style="font-weight: 500; margin-top: 12px; letter-spacing: 1px; font-size: 0.60rem;">Pour toute question, problème<br>suggestion ou en cas de bug<br> nous vous prions de bien vouloir<br>contacter AGANDCO<br>concernant RADIOLINKY</p>
     
+    </div></div>
     
     <a href="https://play.google.com/store/apps/details?id=com.android.chrome" target="_blank" style="text-decoration: none; color: inherit;">
     <p style="opacity: 0.7; font-size: 0.65rem; letter-spacing: 1px; margin-bottom: 0px; display: flex; align-items: center; justify-content: center; gap: 5px;">
