@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/vsqN1NZ.png">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/vsqN1NZ.png">
+    <title>METEO ELITE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #ffffff; 
+            --bg: #000000; 
+            --text: #ffffff; 
+            --border: #ffffff; 
+            --contrast-text: #000000; 
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; text-transform: uppercase; }
+        
+        body { 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Montserrat', sans-serif; 
+            min-height: 100vh; 
+            overflow-x: hidden;
+        }
+
+        .app-container { min-height: 100vh; padding: 20px 15px; display: flex; flex-direction: column; }
+        .elite-text { color: var(--bg); text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0px 0px 3px #fff; padding: 0 2px; letter-spacing: 2px; }
+
+        .search-box { position: relative; margin-bottom: 20px; display: grid; grid-template-columns: 45px 1fr 45px; gap: 8px; align-items: stretch; }
+        .search-box input { padding: 12px 15px; border-radius: 12px; border: 2px solid #fff; background: rgba(255,255,255,0.1); color: #fff; font-family: inherit; font-weight: 600; font-size: 0.85rem; width: 100%; }
+        .search-btn, .geo-btn { background: var(--accent); color: var(--contrast-text); border: 2px solid #fff; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .geo-btn { background: rgba(255,255,255,0.1); color: #fff; }
+        .geo-btn i { width: 18px; height: 18px; }
+
+        .weather-card, .weather-story, .status-card { 
+            background: linear-gradient(to bottom, var(--accent) -200%, #000 100%);
+            border-radius: 25px; border: 2px solid #fff; 
+        }
+
+        .weather-card, .status-card { padding: 30px; text-align: center; margin-top: 10px; display: flex; flex-direction: column; align-items: center; }
+        .status-card { margin-bottom: 20px; padding: 20px; }
+
+        .weather-icon-wrapper { margin: 15px 0; display: flex; justify-content: center; align-items: center; }
+        .anim-sun { animation: rotateSun 10s linear infinite; }
+        @keyframes rotateSun { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .anim-cloud { animation: floatCloud 3s ease-in-out infinite; }
+        @keyframes floatCloud { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .anim-rain { animation: pulseRain 1s ease-in-out infinite; }
+        @keyframes pulseRain { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
+
+        #city-name { font-weight: 900; font-size: 1.2rem; margin-bottom: 5px; letter-spacing: 1px; }
+        #temp-display { font-size: 5rem; font-weight: 900; margin: 5px 0; line-height: 1; }
+        #weather-desc { font-weight: 700; opacity: 0.8; font-size: 0.9rem; margin-bottom: 20px; }
+        
+        .weather-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px; }
+        .info-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); }
+        .info-label { font-size: 0.6rem; opacity: 0.6; margin-bottom: 5px; font-weight: 800; }
+        .info-value { font-size: 1rem; font-weight: 900; }
+
+        .weather-story {
+            margin-top: 20px; padding: 25px; font-size: 0.9rem; line-height: 1.7;
+            text-transform: none; font-weight: 400; color: #ddd; text-align: left; position: relative;
+        }
+        .weather-story b { font-weight: 900; color: #ffffff; text-transform: uppercase; }
+
+        .voice-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255,255,255,0.1); border: 2px solid #fff;
+            color: #fff; border-radius: 50%; width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        #settings-panel { position: fixed; inset: 0; background: var(--bg); z-index: 3000; display: none; padding: 30px; overflow-y: auto; }
+        .color-row, .vibration-row { background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 2px solid #fff; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid #fff; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); background-color: var(--contrast-text); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h1 style="font-weight:900; margin:0;">METEO <span class="elite-text">ELITE</span></h1>
+        <i data-lucide="settings" onclick="vibrate(); toggleSettings(true)" style="cursor:pointer;"></i>
+    </div>
+
+    <div class="search-box">
+        <button class="geo-btn" onclick="vibrate(); getLocation()" title="Localisation"><i data-lucide="map-pin"></i></button>
+        <input type="text" id="city-input" placeholder="VILLE..." onkeypress="if(event.key==='Enter') fetchWeather()">
+        <button class="search-btn" onclick="vibrate(); fetchWeather()"><i data-lucide="search"></i></button>
+    </div>
+
+    <div id="status-container" style="display:none;">
+        <div class="status-card">
+            <div id="status-icon"></div>
+            <div id="status-text" style="font-weight:900; margin-top:10px; letter-spacing:1px; font-size: 0.75rem;"></div>
+        </div>
+    </div>
+
+    <div id="weather-result" style="display: none;">
+        <div class="weather-card">
+            <div id="city-name">--</div>
+            <div class="weather-icon-wrapper" id="icon-container"></div>
+            <div id="temp-display">--°</div>
+            <div id="weather-desc">--</div>
+            
+            <div class="weather-info-grid">
+                <div class="info-item">
+                    <div class="info-label">HUMIDITÉ</div>
+                    <div class="info-value" id="val-hum">--%</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">VENT</div>
+                    <div class="info-value" id="val-wind">-- KM/H</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="weather-story">
+            <button class="voice-btn" onclick="vibrate(); speakWeather()"><i id="voice-icon" data-lucide="volume-2"></i></button>
+            <div id="weather-story-content"></div>
+        </div>
+    </div>
+</div>
+
+<div id="settings-panel">
+    <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
+        <h2 style="font-weight:900; margin:0;">PARAMÈTRES</h2>
+        <i data-lucide="x" onclick="vibrate(); toggleSettings(false)"></i>
+    </div>
+    <div class="vibration-row">
+        <label style="font-weight:900;">VIBRATION AU CLIC</label>
+        <label class="switch">
+            <input type="checkbox" id="vibration-toggle" onchange="toggleVibration(this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="color-row">
+        <label style="font-weight:900;">COULEUR ACCENT</label>
+        <input type="color" id="accent-picker" oninput="updateStyle('accent', this.value)">
+    </div>
+</div>
+
+<script>
+    let vibrationEnabled = false;
+    let synth = window.speechSynthesis;
+
+    window.onload = () => {
+        loadSavedStyles();
+        loadVibrationState();
+        lucide.createIcons();
+        const lastCity = localStorage.getItem('ELITE_METEO_lastcity');
+        if(lastCity) {
+            document.getElementById('city-input').value = lastCity;
+            fetchWeather();
+        }
+    };
+
+    function getLocation() {
+        if (!navigator.geolocation) {
+            showStatus('error', 'GPS NON SUPPORTÉ PAR CE NAVIGATEUR');
+            return;
+        }
+
+        // Sécurité : le GPS requiert HTTPS sur la plupart des smartphones
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+            showStatus('error', 'GPS BLOQUÉ : CONNEXION NON SÉCURISÉE (HTTPS REQUIS)');
+            return;
+        }
+
+        showStatus('loading', 'RECHERCHE GPS EN COURS...');
+        
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                try {
+                    // Utilisation d'un service de reverse geocoding
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await res.json();
+                    const city = data.address.city || data.address.town || data.address.village || "MA POSITION";
+                    document.getElementById('city-input').value = city;
+                    fetchWeatherCoord(lat, lon, city);
+                } catch (e) { 
+                    showStatus('error', 'ERREUR RÉSEAU LORS DE LA LOCALISATION'); 
+                }
+            },
+            (error) => { 
+                let msg = "GPS REFUSÉ";
+                if(error.code === 1) msg = "GPS REFUSÉ : VÉRIFIE LES AUTORISATIONS DU NAVIGATEUR";
+                if(error.code === 2) msg = "POSITION INTROUVABLE (VÉRIFIE TON SIGNAL)";
+                if(error.code === 3) msg = "DÉLAI D'ATTENTE DÉPASSÉ";
+                showStatus('error', msg); 
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+    }
+
+    async function fetchWeatherCoord(lat, lon, name) {
+        try {
+            const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,sunrise,sunset&timezone=auto`);
+            const wData = await wRes.json();
+            showStatus('success', 'LOCALISATION RÉUSSIE !');
+            displayWeather(name, wData);
+            localStorage.setItem('ELITE_METEO_lastcity', name);
+        } catch (err) { showStatus('error', 'ERREUR RÉSEAU MÉTEO'); }
+    }
+
+    function speakWeather() {
+        if (synth.speaking) {
+            synth.cancel();
+            document.getElementById('voice-icon').setAttribute('data-lucide', 'volume-2');
+            lucide.createIcons();
+            return;
+        }
+        let text = document.getElementById('weather-story-content').innerText;
+        text = text.replace(/ est /gi, " é "); 
+        text = text.replace(/km\/h/gi, "kilomètres par heure");
+        text = text.replace(/%/g, " pour cent");
+        text = text.replace(/°C/g, " degrés Celsius");
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'fr-FR';
+        utter.rate = 0.9;
+        utter.onstart = () => { document.getElementById('voice-icon').setAttribute('data-lucide', 'square'); lucide.createIcons(); };
+        utter.onend = () => { document.getElementById('voice-icon').setAttribute('data-lucide', 'volume-2'); lucide.createIcons(); };
+        synth.speak(utter);
+    }
+
+    function showStatus(type, message) {
+        const container = document.getElementById('status-container');
+        const iconDiv = document.getElementById('status-icon');
+        const textDiv = document.getElementById('status-text');
+        container.style.display = 'block';
+        textDiv.innerText = message;
+        if(type === 'error') {
+            iconDiv.innerHTML = '<i data-lucide="frown" style="width:35px; height:35px; color:#ff4444;"></i>';
+            document.getElementById('weather-result').style.display = 'none';
+        } else if(type === 'loading') {
+            iconDiv.innerHTML = '<i data-lucide="map-pin" class="anim-cloud" style="width:35px; height:35px; color:#fff;"></i>';
+        } else {
+            iconDiv.innerHTML = '<i data-lucide="smile" style="width:35px; height:35px; color:#44ff44;"></i>';
+        }
+        lucide.createIcons();
+        if(type === 'success') { setTimeout(() => { container.style.display = 'none'; }, 2000); }
+    }
+
+    async function fetchWeather() {
+        const city = document.getElementById('city-input').value.trim();
+        if(!city) return;
+        try {
+            const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=fr&format=json`);
+            const geoData = await geoRes.json();
+            if(!geoData.results) { showStatus('error', 'VILLE INTROUVABLE'); return; }
+            const { latitude, longitude, name } = geoData.results[0];
+            fetchWeatherCoord(latitude, longitude, name);
+        } catch (err) { showStatus('error', 'ERREUR RÉSEAU'); }
+    }
+
+    function displayWeather(name, allData) {
+        const data = allData.current;
+        const daily = allData.daily;
+        const now = new Date();
+        const sunriseTime = new Date(daily.sunrise[0]);
+        const sunsetTime = new Date(daily.sunset[0]);
+        const isNight = now < sunriseTime || now > sunsetTime;
+
+        document.getElementById('weather-result').style.display = 'block';
+        document.getElementById('city-name').innerText = name;
+        document.getElementById('temp-display').innerText = Math.round(data.temperature_2m) + "°";
+        document.getElementById('val-hum').innerText = data.relative_humidity_2m + "%";
+        document.getElementById('val-wind').innerText = Math.round(data.wind_speed_10m) + " KM/H";
+        
+        const codes = {
+            0: ["CIEL DÉGAGÉ", isNight ? "moon" : "sun", isNight ? "anim-cloud" : "anim-sun"], 
+            1: ["SURTOUT DÉGAGÉ", isNight ? "moon" : "sun", isNight ? "anim-cloud" : "anim-sun"],
+            2: ["PARTIELLEMENT NUAGEUX", isNight ? "cloud-moon" : "cloud-sun", "anim-cloud"], 
+            3: ["CIEL COUVERT", "cloud", "anim-cloud"],
+            45: ["BROUILLARD", "cloud-fog", "anim-cloud"], 
+            51: ["UNE BRUINE", "cloud-drizzle", "anim-rain"],
+            61: ["PLUIE LÉGÈRE", "cloud-rain", "anim-rain"], 
+            63: ["PLUIE MODÉRÉE", "cloud-rain", "anim-rain"],
+            71: ["NEIGE LÉGÈRE", "cloud-snow", "anim-cloud"], 
+            80: ["UNE AVERSE", "cloud-rain-wind", "anim-rain"],
+            95: ["ORAGE", "cloud-lightning", "anim-rain"]
+        };
+
+        const config = codes[data.weather_code] || ["MÉTÉO VARIABLE", "cloud", "anim-cloud"];
+        document.getElementById('weather-desc').innerText = config[0];
+        document.getElementById('icon-container').innerHTML = `<i data-lucide="${config[1]}" class="${config[2]}" style="width:60px; height:60px;"></i>`;
+        lucide.createIcons();
+
+        let conseil = "LES CONDITIONS SONT IDÉALES.";
+        const temp = data.temperature_2m;
+        const code = data.weather_code;
+        const wind = data.wind_speed_10m;
+        const tomorrowCode = daily.weather_code[1];
+
+        if (code >= 51 || tomorrowCode >= 51) { conseil = "🧥 UN IMPERMÉABLE ET UN PARAPLUIE SONT INDISPENSABLES."; }
+        else if (temp < 10) { conseil = "🧣 IL FAIT FROID : SORTEZ LE GROS MANTEAU ET L'ÉCHARPE."; }
+        else if (temp < 18) { conseil = "🧥 UNE VESTE OU UN PULL LÉGER SERONT PARFAITS."; }
+        else if (wind > 30) { conseil = "🌬️ ATTENTION AU VENT FORT : COUVREZ-VOUS BIEN LES OREILLES."; }
+        else if (temp >= 25) { conseil = "👕 T-SHIRT ET LUNETTES DE SOLEIL DE RIGUEUR !"; }
+
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        const dateStr = now.toLocaleDateString('fr-FR', options);
+        const descDemain = (codes[tomorrowCode] ? codes[tomorrowCode][0] : "variable").toLowerCase();
+        const fTime = (t) => t.split('T')[1];
+        
+        const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. C'EST <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b> ACTUELLEMENT.<br> LA TEMPÉRATURE RELEVÉE EST DE <b>${Math.round(temp)}°C</b>, AVEC UN TAUX D'HUMIDITÉ DE <b>${data.relative_humidity_2m}%</b>.<br> UN VENT DE <b>${Math.round(wind)} KM/H</b> AFFECTE LA VILLE DE <b>${name}</b>.<br><br> ${conseil}<br><br>
+        <span style="opacity:0.8; font-size:0.8rem;">🌅 <b>${fTime(daily.sunrise[0])}</b> | 🌇 <b>${fTime(daily.sunset[0])}</b></span><br>
+        LES PRÉVISIONS POUR DEMAIN INDIQUENT <b>${descDemain}</b> AVEC UNE TEMPÉRATURE MAXIMALE DE <b>${Math.round(daily.temperature_2m_max[1])}°C</b>.`;
+        
+        document.getElementById('weather-story-content').innerHTML = storyText;
+    }
+
+    function loadVibrationState() { vibrationEnabled = localStorage.getItem('ELITE_METEO_vibration') === 'true'; if(document.getElementById('vibration-toggle')) document.getElementById('vibration-toggle').checked = vibrationEnabled; }
+    function toggleVibration(state) { vibrationEnabled = state; localStorage.setItem('ELITE_METEO_vibration', state); if(state) vibrate(); }
+    function vibrate() { if (vibrationEnabled && window.navigator.vibrate) window.navigator.vibrate(40); }
+    function loadSavedStyles() { const savedAccent = localStorage.getItem('ELITE_METEO_accent') || '#ffffff'; updateStyle('accent', savedAccent); document.getElementById('accent-picker').value = savedAccent; }
+    function updateStyle(k, v) {
+        document.documentElement.style.setProperty(`--${k}`, v);
+        localStorage.setItem(`ELITE_METEO_${k}`, v);
+        const rgb = v.replace(/^#/, '').match(/.{2}/g).map(x => parseInt(x, 16) / 255);
+        const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+        document.documentElement.style.setProperty('--contrast-text', lum > 0.5 ? '#000' : '#fff');
+    }
+    function toggleSettings(s) { document.getElementById('settings-panel').style.display = s ? 'block' : 'none'; }
+</script>
+</body>
+</html>
