@@ -312,7 +312,7 @@
         
         // TEXTE COMPLET ET PREMIUM (CORRIGÉ AVEC ESPACES ET "À")
         const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. IL EST ACTUELLEMENT <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b>.<br> LA TEMPÉRATURE RELEVÉE EST DE <b>${Math.round(temp)}°C</b>, AVEC UN TAUX D'HUMIDITÉ DE <b>${data.relative_humidity_2m}%</b>.<br> UN VENT DE <b>${Math.round(wind)} KM/H</b> AFFECTE LA VILLE DE <b>${name}</b>.<br><br> ${conseil}<br><br>
-        <span style="opacity:0.8; font-size:0.8rem;">🌅 LEVER DU SOLEIL À <b>${fTime(daily.sunrise[0])}</b> | 🌇 COUCHER DU SOLEIL À <b>${fTime(daily.sunset[0])}</b></span><br>
+        <span style="opacity:0.8; font-size:0.8rem;">🌅 LEVER DU SOLEIL À <b>${fTime(daily.sunrise[0])}</b> <br> 🌇 COUCHER DU SOLEIL À <b>${fTime(daily.sunset[0])}</b></span><br>
         LES PRÉVISIONS POUR DEMAIN INDIQUENT <b>${descDemain}</b> AVEC UNE TEMPÉRATURE MAXIMALE DE <b>${Math.round(daily.temperature_2m_max[1])}°C</b>.`;
         
         document.getElementById('weather-story-content').innerHTML = storyText;
