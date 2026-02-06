@@ -109,12 +109,12 @@
         <div class="weather-card">
             <div id="city-name">--</div>
             <div class="weather-icon-wrapper" id="icon-container"></div>
-            <div id="temp-display">--°</div>
+            <div id="temp-display">--掳</div>
             <div id="weather-desc">--</div>
             
             <div class="weather-info-grid">
                 <div class="info-item">
-                    <div class="info-label">HUMIDITÉ</div>
+                    <div class="info-label">HUMIDIT脡</div>
                     <div class="info-value" id="val-hum">--%</div>
                 </div>
                 <div class="info-item">
@@ -133,7 +133,7 @@
 
 <div id="settings-panel">
     <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
-        <h2 style="font-weight:900; margin:0;">PARAMÈTRES</h2>
+        <h2 style="font-weight:900; margin:0;">PARAM脠TRES</h2>
         <i data-lucide="x" onclick="vibrate(); toggleSettings(false)"></i>
     </div>
     <div class="vibration-row">
@@ -166,7 +166,7 @@
 
     function getLocation() {
         if (!navigator.geolocation) {
-            showStatus('error', 'GPS NON SUPPORTÉ');
+            showStatus('error', 'GPS NON SUPPORT脡');
             return;
         }
         showStatus('loading', 'RECHERCHE GPS...');
@@ -182,7 +182,7 @@
                     fetchWeatherCoord(lat, lon, city);
                 } catch (e) { showStatus('error', 'ERREUR GPS'); }
             },
-            (error) => { showStatus('error', 'GPS REFUSÉ - VÉRIFIE TES RÉGLAGES'); },
+            (error) => { showStatus('error', 'GPS REFUS脡 - V脡RIFIE TES R脡GLAGES'); },
             { enableHighAccuracy: true, timeout: 8000 }
         );
     }
@@ -191,10 +191,10 @@
         try {
             const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,sunrise,sunset&timezone=auto`);
             const wData = await wRes.json();
-            showStatus('success', 'LOCALISATION RÉUSSIE !');
+            showStatus('success', 'LOCALISATION R脡USSIE !');
             displayWeather(name, wData);
             localStorage.setItem('ELITE_METEO_lastcity', name);
-        } catch (err) { showStatus('error', 'ERREUR RÉSEAU'); }
+        } catch (err) { showStatus('error', 'ERREUR R脡SEAU'); }
     }
 
     function speakWeather() {
@@ -205,10 +205,10 @@
             return;
         }
         let text = document.getElementById('weather-story-content').innerText;
-        text = text.replace(/ est /gi, " é "); 
-        text = text.replace(/km\/h/gi, "kilomètres par heure");
+        text = text.replace(/ est /gi, " 茅 "); 
+        text = text.replace(/km\/h/gi, "kilom猫tres par heure");
         text = text.replace(/%/g, " pour cent");
-        text = text.replace(/°C/g, " degrés Celsius");
+        text = text.replace(/掳C/g, " degr茅s Celsius");
         const utter = new SpeechSynthesisUtterance(text);
         utter.lang = 'fr-FR';
         utter.rate = 0.9;
@@ -244,7 +244,7 @@
             if(!geoData.results) { showStatus('error', 'VILLE INTROUVABLE'); return; }
             const { latitude, longitude, name } = geoData.results[0];
             fetchWeatherCoord(latitude, longitude, name);
-        } catch (err) { showStatus('error', 'ERREUR RÉSEAU'); }
+        } catch (err) { showStatus('error', 'ERREUR R脡SEAU'); }
     }
 
     function displayWeather(name, allData) {
@@ -257,51 +257,51 @@
 
         document.getElementById('weather-result').style.display = 'block';
         document.getElementById('city-name').innerText = name;
-        document.getElementById('temp-display').innerText = Math.round(data.temperature_2m) + "°";
+        document.getElementById('temp-display').innerText = Math.round(data.temperature_2m) + "掳";
         document.getElementById('val-hum').innerText = data.relative_humidity_2m + "%";
         document.getElementById('val-wind').innerText = Math.round(data.wind_speed_10m) + " KM/H";
         
         const codes = {
-            0: ["CIEL DÉGAGÉ", isNight ? "moon" : "sun", isNight ? "anim-cloud" : "anim-sun"], 
-            1: ["SURTOUT DÉGAGÉ", isNight ? "moon" : "sun", isNight ? "anim-cloud" : "anim-sun"],
+            0: ["CIEL D脡GAG脡", isNight ? "moon" : "sun", isNight ? "anim-cloud" : "anim-sun"], 
+            1: ["SURTOUT D脡GAG脡", isNight ? "moon" : "sun", isNight ? "anim-cloud" : "anim-sun"],
             2: ["PARTIELLEMENT NUAGEUX", isNight ? "cloud-moon" : "cloud-sun", "anim-cloud"], 
             3: ["CIEL COUVERT", "cloud", "anim-cloud"],
             45: ["BROUILLARD", "cloud-fog", "anim-cloud"], 
             51: ["UNE BRUINE", "cloud-drizzle", "anim-rain"],
-            61: ["PLUIE LÉGÈRE", "cloud-rain", "anim-rain"], 
-            63: ["PLUIE MODÉRÉE", "cloud-rain", "anim-rain"],
-            71: ["NEIGE LÉGÈRE", "cloud-snow", "anim-cloud"], 
+            61: ["PLUIE L脡G脠RE", "cloud-rain", "anim-rain"], 
+            63: ["PLUIE MOD脡R脡E", "cloud-rain", "anim-rain"],
+            71: ["NEIGE L脡G脠RE", "cloud-snow", "anim-cloud"], 
             80: ["UNE AVERSE", "cloud-rain-wind", "anim-rain"],
             95: ["ORAGE", "cloud-lightning", "anim-rain"]
         };
 
-        const config = codes[data.weather_code] || ["MÉTÉO VARIABLE", "cloud", "anim-cloud"];
+        const config = codes[data.weather_code] || ["M脡T脡O VARIABLE", "cloud", "anim-cloud"];
         document.getElementById('weather-desc').innerText = config[0];
         document.getElementById('icon-container').innerHTML = `<i data-lucide="${config[1]}" class="${config[2]}" style="width:60px; height:60px;"></i>`;
         lucide.createIcons();
 
-        // LOGIQUE DES CONSEILS CORRIGÉE POUR PIA/PERPIGNAN
-        let conseil = "LES CONDITIONS SONT IDÉALES.";
+        // LOGIQUE DES CONSEILS CORRIG脡E POUR PIA/PERPIGNAN
+        let conseil = "LES CONDITIONS SONT ID脡ALES.";
         const temp = data.temperature_2m;
         const code = data.weather_code;
         const wind = data.wind_speed_10m;
         const tomorrowCode = daily.weather_code[1];
 
-        if (code >= 51 || tomorrowCode >= 51) { conseil = "🧥 UN IMPERMÉABLE ET UN PARAPLUIE SONT INDISPENSABLES."; }
-        else if (temp <= 8) { conseil = "🧣 IL FAIT FROID : SORTEZ LE GROS MANTEAU ET L'ÉCHARPE."; }
-        else if (temp <= 13) { conseil = "🧥 UNE VESTE OU UN PULL SERONT PARFAITS."; }
-        else if (temp < 20) { conseil = "🧥 UN PULL LÉGER POURRAIT ÊTRE UTILE."; }
-        else if (wind > 35) { conseil = "🌬️ ATTENTION AU VENT FORT : COUVREZ-VOUS BIEN."; }
-        else if (temp >= 25) { conseil = "👕 T-SHIRT ET LUNETTES DE SOLEIL DE RIGUEUR !"; }
+        if (code >= 51 || tomorrowCode >= 51) { conseil = "馃Д UN IMPERM脡ABLE ET UN PARAPLUIE SONT INDISPENSABLES."; }
+        else if (temp <= 8) { conseil = "馃В IL FAIT FROID : SORTEZ LE GROS MANTEAU ET L'脡CHARPE."; }
+        else if (temp <= 13) { conseil = "馃Д UNE VESTE OU UN PULL SERONT PARFAITS."; }
+        else if (temp < 20) { conseil = "馃Д UN PULL L脡GER POURRAIT 脢TRE UTILE."; }
+        else if (wind > 35) { conseil = "馃尙锔� ATTENTION AU VENT FORT : COUVREZ-VOUS BIEN."; }
+        else if (temp >= 25) { conseil = "馃憰 T-SHIRT ET LUNETTES DE SOLEIL DE RIGUEUR !"; }
 
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
         const dateStr = now.toLocaleDateString('fr-FR', options);
         const descDemain = (codes[tomorrowCode] ? codes[tomorrowCode][0] : "variable").toLowerCase();
         const fTime = (t) => t.split('T')[1];
         
-        const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. C'EST <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b> ACTUELLEMENT.<br> LA TEMPÉRATURE RELEVÉE EST DE <b>${Math.round(temp)}°C</b>, AVEC UN TAUX D'HUMIDITÉ DE <b>${data.relative_humidity_2m}%</b>.<br> UN VENT DE <b>${Math.round(wind)} KM/H</b> AFFECTE LA VILLE DE <b>${name}</b>.<br><br> ${conseil}<br><br>
-        <span style="opacity:0.8; font-size:0.8rem;">🌅 <b>${fTime(daily.sunrise[0])}</b> | 🌇 <b>${fTime(daily.sunset[0])}</b></span><br>
-        LES PRÉVISIONS POUR DEMAIN INDIQUENT <b>${descDemain}</b> AVEC UNE TEMPÉRATURE MAXIMALE DE <b>${Math.round(daily.temperature_2m_max[1])}°C</b>.`;
+        const storyText = `NOUS SOMMES LE <b>${dateStr}</b>. C'EST <b>${now.getHours()}H${String(now.getMinutes()).padStart(2, '0')}</b> ACTUELLEMENT.<br> LA TEMP脡RATURE RELEV脡E EST DE <b>${Math.round(temp)}掳C</b>, AVEC UN TAUX D'HUMIDIT脡 DE <b>${data.relative_humidity_2m}%</b>.<br> UN VENT DE <b>${Math.round(wind)} KM/H</b> AFFECTE LA VILLE DE <b>${name}</b>.<br><br> ${conseil}<br><br>
+        <span style="opacity:0.8; font-size:0.8rem;">馃寘 <b>${fTime(daily.sunrise[0])}</b> | 馃寚 <b>${fTime(daily.sunset[0])}</b></span><br>
+        LES PR脡VISIONS POUR DEMAIN INDIQUENT <b>${descDemain}</b> AVEC UNE TEMP脡RATURE MAXIMALE DE <b>${Math.round(daily.temperature_2m_max[1])}掳C</b>.`;
         
         document.getElementById('weather-story-content').innerHTML = storyText;
     }
