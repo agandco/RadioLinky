@@ -129,7 +129,7 @@
 
     </style>
 </head>
-<body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
+<body oncontextmenu="return false;">
 
 <div class="app-container" id="main-scroll">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
@@ -217,7 +217,8 @@
     let playlist = [], currentIndex = 0, isPlaying = false, vizMode = 'bars';
     let isShuffle = false, loopMode = 0;
     let config = { bg: '#000000', accent: '#ffffff', viz: '#000000' };
-    let audio = new Audio(), audioCtx, analyser, dataArray;
+    let audio = new Audio(), audioCtx, analyser, dataArray, gainNode;
+    let isDrawing = false;
     let canVibrate = true;
 
     function vibrate() {
@@ -291,16 +292,15 @@
             loader.style.display = 'none'; 
             barFill.style.width = '0%'; 
             
-            // On récupère tout de la DB et on met à jour la playlist locale
             const transaction = db.transaction("songs", "readonly");
             const store = transaction.objectStore("songs");
             store.getAll().onsuccess = (ev) => {
-                playlist = []; // On vide pour éviter les doublons
+                playlist = [];
                 ev.target.result.forEach(item => {
                     item.meta.url = URL.createObjectURL(item.data);
                     playlist.push(item.meta);
                 });
-                renderUI(); // On relance l'affichage
+                renderUI();
             };
         }, 1000);
     };
@@ -353,12 +353,53 @@
         }
     }
 
+    function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser(); 
+        analyser.fftSize = 512;
+
+        // 1. Gain modéré (3.0 offre un très bon boost sans écraser le signal)
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 3.0; 
+
+        // 2. Compresseur/Limiteur anti-grésillement
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -3.0; // Ne coupe que ce qui dépasse vraiment le plafond
+        compressor.knee.value = 10;        // Transition plus douce pour éviter le craquement
+        compressor.ratio.value = 20;       // Limiteur strict
+        compressor.attack.value = 0.001;   // Attaque ultra-rapide pour stopper net la saturation
+        compressor.release.value = 0.1;    // Relâchement rapide pour garder de la dynamique
+
+        const source = audioCtx.createMediaElementSource(audio);
+
+        source.connect(analyser);
+        analyser.connect(gainNode);
+        gainNode.connect(compressor);
+        compressor.connect(audioCtx.destination);
+
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+    }
+    
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    
+    if (!isDrawing) {
+        isDrawing = true;
+        draw();
+    }
+}
+
+
     function playTrack(idx, shouldScroll = false) {
         currentIndex = idx;
         const track = playlist[idx];
         audio.src = track.url;
+        
         document.querySelectorAll('.card-art').forEach(img => img.classList.remove('is-spinning'));
         document.querySelectorAll('.music-card').forEach(c => c.classList.remove('playing-this'));
+        
         const targetCard = document.getElementById(`card-${idx}`);
         if(targetCard) {
             targetCard.classList.add('playing-this');
@@ -369,15 +410,23 @@
                 }, 100);
             }
         }
+        
         document.getElementById('mini-art').src = track.cover;
         document.getElementById('fs-art').src = track.cover;
         document.getElementById('mini-title').innerText = track.title;
         document.getElementById('fs-title').innerText = track.title;
         document.getElementById('fs-artist').innerText = track.artist;
-        audio.play().then(() => updateMediaSession(track));
+        
+        initAudio();
+        
+        audio.play().then(() => {
+            updateMediaSession(track);
+        }).catch(err => {
+            console.warn("Lecture bloquée par le navigateur :", err);
+        });
+
         isPlaying = true; 
         updateIcons();
-        if(!audioCtx) initAudio();
         setTimeout(checkMarquees, 50);
     }
 
@@ -394,7 +443,12 @@
     }
 
     function togglePlay() { 
-        if (isPlaying) audio.pause(); else audio.play();
+        if (!audioCtx) initAudio();
+        if (isPlaying) {
+            audio.pause();
+        } else {
+            audio.play();
+        }
         isPlaying = !isPlaying; 
         updateIcons(); 
     }
@@ -501,14 +555,6 @@
             if(document.getElementById('fs-artist')) document.getElementById('fs-artist').style.color = safeColor;
             document.documentElement.style.setProperty('--contrast-border', luminance < 0.2 ? '#ffffff' : v);
         }
-    }
-
-    function initAudio() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
-        audioCtx.createMediaElementSource(audio).connect(analyser);
-        analyser.connect(audioCtx.destination);
-        dataArray = new Uint8Array(analyser.frequencyBinCount); draw();
     }
 
     function nextTrack() {
