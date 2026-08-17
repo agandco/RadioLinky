@@ -461,29 +461,37 @@
     }
 
     function playStation(station, element = null) {
-        currentStation = station;
-        audio.src = station.url;
-        audio.play().then(() => {
-            updateMediaSession();
-        }).catch(() => console.log("Auto-play bloqué ou flux invalide"));
-        
-        isPlaying = true;
-        document.getElementById('mini-art').src = station.logo;
-        document.getElementById('fs-art').src = station.logo;
-        document.getElementById('mini-title').innerText = station.name;
-        document.getElementById('fs-title').innerText = station.name;
-        
-        if(!audioCtx) initAudio();
-        updateIcons(); 
-        checkMarquees();
-        
-        if (element) {
-            setTimeout(() => {
-                const pos = element.getBoundingClientRect().top + window.pageYOffset - 15;
-                window.scrollTo({ top: pos, behavior: 'smooth' });
-            }, 100);
-        }
+    currentStation = station;
+    audio.src = station.url;
+
+    if (!audioCtx) {
+        initAudio();
+    } else if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
     }
+
+    audio.play().then(() => {
+        updateMediaSession();
+    }).catch(() => console.log("Auto-play bloqué ou flux invalide"));
+    
+    isPlaying = true;
+    document.getElementById('mini-art').src = station.logo;
+    document.getElementById('fs-art').src = station.logo;
+    document.getElementById('mini-title').innerText = station.name;
+    document.getElementById('fs-title').innerText = station.name;
+    
+    updateIcons(); 
+    checkMarquees();
+    
+    if (element) {
+        setTimeout(() => {
+            const pos = element.getBoundingClientRect().top + window.pageYOffset - 15;
+            window.scrollTo({ top: pos, behavior: 'smooth' });
+        }, 100);
+    }
+}
+
+
 
     function updateMediaSession() {
         if ('mediaSession' in navigator && currentStation) {
@@ -498,10 +506,14 @@
     }
 
     function togglePlay() { 
-        if (isPlaying) { audio.pause(); } else { audio.play(); }
-        isPlaying = !isPlaying; 
-        updateIcons(); 
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
     }
+    if (isPlaying) { audio.pause(); } else { audio.play(); }
+    isPlaying = !isPlaying; 
+    updateIcons(); 
+}
+
 
     function updateIcons() {
         const icon = isPlaying ? 'pause' : 'play';
@@ -743,14 +755,30 @@
         reader.readAsText(input.files[0]);
     }
 
-    function initAudio() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
-        audioCtx.createMediaElementSource(audio).connect(analyser);
-        analyser.connect(audioCtx.destination);
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        draw();
-    }
+function initAudio() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser(); 
+    analyser.fftSize = 512;
+
+    // Création du nœud de gain pour booster le volume
+    const gainNode = audioCtx.createGain();
+    
+    // Réglage du multiplicateur de volume (ex: 2.5 à 3.0 pour un boost bien plus fort)
+    gainNode.gain.value = 3.5; 
+
+    // Création de la source audio
+    const source = audioCtx.createMediaElementSource(audio);
+    
+    // Chaînage propre : Source -> Gain -> Analyseur -> Haut-parleurs
+    source.connect(gainNode);
+    gainNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    draw();
+}
+
+
 
     function draw() {
         requestAnimationFrame(draw); if (!analyser) return;
