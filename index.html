@@ -13,7 +13,6 @@
     
     <meta name="description" content="Découvrez RADIOLINKY ELITE, votre espace tout-en-un : radio, lecteur MP3, calculatrice et gestionnaires personnels. L'expérience Elite sans publicité.">
 
-
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://radiolinky.com/">
     <meta property="og:title" content="RADIOLINKY ELITE">
@@ -49,7 +48,6 @@
             user-select: none;
             -webkit-touch-callout: none;
             -webkit-overflow-scrolling: touch;
-
         }
 
         .menu-container {
@@ -83,26 +81,74 @@
             margin-top: -25px;
         }
 
-        .nav-link {
-            padding: 15px 0px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: #000; 
-            color: #fff;     
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 900;
+        .menu-content small {
+            grid-column: span 2;
+            margin-top: 10px;
+            margin-bottom: 0px;
+            color: var(--accent);
+            opacity: 0.6;
+            letter-spacing: 1px;
             font-size: 0.75rem;
-            border: 2px solid #fff;
-            margin-left: 5px;
-            margin-right: 5px;
         }
 
-        .nav-link i { width: 20px; height: 20px; }
+                .nav-link {
+    position: relative;
+    padding: 20px 0px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #000; 
+    color: #ffffff !important;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+    
+    /* 1. Isolation de la carte pour gérer les z-index proprement */
+    isolation: isolate; 
+}
+
+.nav-link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.60);
+    /* 2. Place le calque en arrière-plan (-1 par rapport au contenu du lien) */
+    z-index: -1; 
+    transition: background 0.3s ease;
+}
+
+.nav-link:active::before {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.nav-link i,
+.nav-link svg { 
+    width: 20px; 
+    height: 20px; 
+    stroke: #ffffff !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+
         .donate-link { border-color: #fff; }
+
+        /* Bannières personnalisées pour chaque application (Ajuste les chemins d'accès vers tes images) */
+        .nav-link.bg-radio   { background-image: url('https://static.vecteezy.com/system/resources/previews/006/464/063/non_2x/abstract-equalizer-wave-design-music-sound-wave-element-waveform-with-neon-color-gradient-wavy-line-background-free-photo.jpg'); }
+        .nav-link.bg-mp3     { background-image: url('https://png.pngtree.com/thumb_back/fh260/back_our/20190622/ourmid/pngtree-purple-minimalist-music-note-banner-background-image_210612.jpg'); }
+        .nav-link.bg-linky   { background-image: url('https://static.vecteezy.com/ti/vecteur-libre/p1/75287756-abstrait-reseau-lien-contexte-numerique-la-technologie-la-toile-banniere-vectoriel.jpg'); }
+        .nav-link.bg-tube    { background-image: url('https://static.vecteezy.com/ti/vecteur-libre/p1/46983339-jeu-pepin-arriere-plan-pixel-bruit-modele-vectoriel.jpg'); }
+        .nav-link.bg-clock   { background-image: url('https://images.stockcake.com/public/8/4/b/84bfe7e5-8dc9-4acd-baf8-4f31fc155e85_medium/neon-time-reset-stockcake.jpg'); }
+        .nav-link.bg-meteo   { background-image: url('https://img.magnific.com/premium-vector/3d-different-weather-icons-set-cartoon-style-vector_269504-4539.jpg'); }
+        .nav-link.bg-note    { background-image: url('https://e7.pngegg.com/pngimages/148/948/png-clipart-message-box-illustration-rectangle-quotation-purple-purple-rectangle-reference-box-text-violet-thumbnail.png'); }
+        .nav-link.bg-calcul  { background-image: url('https://static.vecteezy.com/system/resources/previews/006/876/522/non_2x/calculator-witn-coins-card-and-banknote-3d-banner-with-copy-space-vector.jpg'); }
 
         .app-frame-container {
             width: 100%;
@@ -124,82 +170,75 @@
             border-top: 1px solid rgba(255, 255, 255, 0.5); 
             margin: 10px 0;
         }
-
-        small {
-            display: block;
-            margin-top: 0px;
-            margin-bottom: 10px;
-            color: var(--accent);
-            opacity: 0.6;
-            letter-spacing: 1px;
-            font-size: 0.75rem;
-        }
     </style>
 </head>
 <body oncontextmenu='return false;' onkeydown='return false;' onmousedown='return false;'>
         
     <div id="pwa-install-container" style="display: none; position: fixed; top: 18px; right: 60px; z-index: 9999;">
         <button id="pwa-install-btn" style="background: #fff; color: #000; border: 2px solid #fff; padding: 8px 15px; border-radius: 50px; font-weight: 900; font-family: 'Montserrat', sans-serif; font-size: 10px; box-shadow: 0 0 15px rgba(255,255,255,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <i data-lucide="download" style="width:14px; height:14px;"></i> INSTALLER
+            <i data-lucide="download" style="width:14px; height:14px;"></i> INSTALLER
         </button>
     </div>
+
     <div class="menu-container" id="header-menu">
         <div class="cat-header" onclick="toggleMenu()">
             <span>MENU</span>
             <i data-lucide="chevron-down" id="menu-icon" style="transition: 0.3s;"></i>
         </div>
         <div class="menu-content" id="menu-links">
-        <hr>
-        <small>APPLICATIONS :</small><br>
-        <a href="radio.html" target="app-viewport" class="nav-link" onclick="handleNav()">
-        <i data-lucide="radio"></i>RADIO
-        </a>
-        <a href="mp3.html" target="app-viewport" class="nav-link" onclick="handleNav()">
-        <i data-lucide="music"></i>MP3
-        </a>
-        <a href="linky.html" target="app-viewport" class="nav-link" onclick="handleNav()" style="margin-top: 10px">
-        <i data-lucide="link"></i>LINKY
-        </a>
-        <a href="tube.html" target="app-viewport" class="nav-link" onclick="handleNav()" style="margin-top: 10px"><i data-lucide="youtube"></i>TUBE
-        </a>
-        <a href="clock.html" target="app-viewport" class="nav-link" onclick="handleNav()" style="margin-top: 10px">
-        <i data-lucide="clock"></i>CLOCK
-        </a>
-        <a href="meteo.html" target="app-viewport" class="nav-link" onclick="handleNav()" style="margin-top: 10px">
-        <i data-lucide="cloud-sun"></i>METEO
-        </a>
-        <a href="note.html" target="app-viewport" class="nav-link" onclick="handleNav()" style="margin-top: 10px">
-        <i data-lucide="sticky-note"></i>NOTE
-        </a>
-        <a href="calcul.html" target="app-viewport" class="nav-link" onclick="handleNav()" style="margin-top: 10px">
-        <i data-lucide="calculator"></i>CALCUL
-        </a>
-        <hr>
-        <small>PARTAGER & SOUTENIR :</small><br>
-        <a href="#" class="nav-link" id="share-app-btn">
-        <i data-lucide="share-2"></i>PARTAGER
-        </a>
-        <a href="https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56" target="_blank" class="nav-link donate-link">
-        <i data-lucide="heart"></i>FAIRE UN DON
-        </a>
-        
-        <hr>
-        <small>CONTACT & INFOS :</small><br>
-        <a href="mailto:agandco.contact@gmail.com?subject=Contact depuis Radiolinky" class="nav-link">
-        <i data-lucide="mail"></i>CONTACT
-        </a>
-        <a href="info.html" target="app-viewport" class="nav-link" onclick="handleNav()">
-        <i data-lucide="info"></i>INFOS
-        </a>
-        
-        
-        </div></div>
-        
-        
-        <div class="app-frame-container">
-        <iframe src="info.html" name="app-viewport" class="app-frame"></iframe>
+            <hr>
+            <small>APPLICATIONS :</small>
+
+            <a href="radio.html" target="app-viewport" class="nav-link bg-radio" onclick="handleNav()">
+                <i data-lucide="radio"></i>RADIO
+            </a>
+            <a href="mp3.html" target="app-viewport" class="nav-link bg-mp3" onclick="handleNav()">
+                <i data-lucide="music"></i>MP3
+            </a>
+            <a href="linky.html" target="app-viewport" class="nav-link bg-linky" onclick="handleNav()">
+                <i data-lucide="link"></i>LINKY
+            </a>
+            <a href="tube.html" target="app-viewport" class="nav-link bg-tube" onclick="handleNav()">
+                <i data-lucide="video"></i>TUBE
+            </a>
+            <a href="clock.html" target="app-viewport" class="nav-link bg-clock" onclick="handleNav()">
+                <i data-lucide="clock"></i>CLOCK
+            </a>
+            <a href="meteo.html" target="app-viewport" class="nav-link bg-meteo" onclick="handleNav()">
+                <i data-lucide="cloud-sun"></i>METEO
+            </a>
+            <a href="note.html" target="app-viewport" class="nav-link bg-note" onclick="handleNav()">
+                <i data-lucide="sticky-note"></i>NOTE
+            </a>
+            <a href="calcul.html" target="app-viewport" class="nav-link bg-calcul" onclick="handleNav()">
+                <i data-lucide="calculator"></i>CALCUL
+            </a>
+
+            <hr>
+            <small>PARTAGER & SOUTENIR :</small>
+
+            <a href="#" class="nav-link" id="share-app-btn">
+                <i data-lucide="share-2"></i>PARTAGER
+            </a>
+            <a href="https://www.paypal.com/donate/?hosted_button_id=VBNVZCGGHFE56" target="_blank" class="nav-link donate-link">
+                <i data-lucide="heart"></i>FAIRE UN DON
+            </a>
+            
+            <hr>
+            <small>CONTACT & INFOS :</small>
+
+            <a href="mailto:agandco.contact@gmail.com?subject=Contact depuis Radiolinky" class="nav-link">
+                <i data-lucide="mail"></i>CONTACT
+            </a>
+            <a href="info.html" target="app-viewport" class="nav-link" onclick="handleNav()">
+                <i data-lucide="info"></i>INFOS
+            </a>
         </div>
-    
+    </div>
+        
+    <div class="app-frame-container">
+        <iframe src="info.html" name="app-viewport" class="app-frame"></iframe>
+    </div>
 
     <script>
         lucide.createIcons();
