@@ -760,23 +760,31 @@ function initAudio() {
     analyser = audioCtx.createAnalyser(); 
     analyser.fftSize = 512;
 
-    // Création du nœud de gain pour booster le volume
+    // Nœud de gain identique aux MP3 (3.0)
     const gainNode = audioCtx.createGain();
-    
-    // Réglage du multiplicateur de volume (ex: 2.5 à 3.0 pour un boost bien plus fort)
-    gainNode.gain.value = 3.5; 
+    gainNode.gain.value = 3.0; 
+
+    // Compresseur/Limiteur anti-grésillement
+    const compressor = audioCtx.createDynamicsCompressor();
+    compressor.threshold.value = -3.0;
+    compressor.knee.value = 10;
+    compressor.ratio.value = 20;
+    compressor.attack.value = 0.001;
+    compressor.release.value = 0.1;
 
     // Création de la source audio
     const source = audioCtx.createMediaElementSource(audio);
     
-    // Chaînage propre : Source -> Gain -> Analyseur -> Haut-parleurs
-    source.connect(gainNode);
-    gainNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
+    // Chaînage : Source -> Analyseur -> Gain -> Compresseur -> Haut-parleurs
+    source.connect(analyser);
+    analyser.connect(gainNode);
+    gainNode.connect(compressor);
+    compressor.connect(audioCtx.destination);
 
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     draw();
 }
+
 
 
 
