@@ -359,23 +359,31 @@
         analyser = audioCtx.createAnalyser(); 
         analyser.fftSize = 512;
 
-        // 1. Gain modéré (3.0 offre un très bon boost sans écraser le signal)
-        gainNode = audioCtx.createGain();
-        gainNode.gain.value = 3.0; 
+        // 1. Égaliseur de basses (+5 dB sous 150 Hz)
+        const bassFilter = audioCtx.createBiquadFilter();
+        bassFilter.type = "lowshelf";
+        bassFilter.frequency.value = 150;
+        bassFilter.gain.value = 5.0;
 
-        // 2. Compresseur/Limiteur anti-grésillement
+        // 2. Nœud de gain principal
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 2.5;
+
+        // 3. Compresseur / Limiteur anti-grésillement
         const compressor = audioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -3.0; // Ne coupe que ce qui dépasse vraiment le plafond
-        compressor.knee.value = 10;        // Transition plus douce pour éviter le craquement
-        compressor.ratio.value = 20;       // Limiteur strict
-        compressor.attack.value = 0.001;   // Attaque ultra-rapide pour stopper net la saturation
-        compressor.release.value = 0.1;    // Relâchement rapide pour garder de la dynamique
+        compressor.threshold.value = -3.0;
+        compressor.knee.value = 10;
+        compressor.ratio.value = 20;
+        compressor.attack.value = 0.001;
+        compressor.release.value = 0.1;
 
         const source = audioCtx.createMediaElementSource(audio);
 
-        source.connect(analyser);
-        analyser.connect(gainNode);
-        gainNode.connect(compressor);
+        // Chaînage : Source -> Basses -> Gain -> Analyseur -> Compresseur -> HP
+        source.connect(bassFilter);
+        bassFilter.connect(gainNode);
+        gainNode.connect(analyser);
+        analyser.connect(compressor);
         compressor.connect(audioCtx.destination);
 
         dataArray = new Uint8Array(analyser.frequencyBinCount);
@@ -390,6 +398,7 @@
         draw();
     }
 }
+
 
 
     function playTrack(idx, shouldScroll = false) {
