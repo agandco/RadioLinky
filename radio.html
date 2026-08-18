@@ -163,7 +163,8 @@
     <div style="margin-top:50px; text-align:center; z-index:10; width: 100%; padding: 0 20px;">
         <div id="fs-clock" style="color:var(--clock-color); font-weight:700; margin-bottom:15px; letter-spacing: 2px;">00:00:00</div>
         <div class="title-box" style="height:40px;"><span id="fs-title" class="marquee" style="font-size:1.2rem; color:#fff;">Titre Radio</span></div>
-    </div> <div style="display:flex; width:100%; justify-content:space-around; align-items:center; margin-top:30px; z-index:10; padding:0 20px;">
+    </div> 
+    <div style="display:flex; width:100%; justify-content:space-around; align-items:center; margin-top:30px; z-index:10; padding:0 20px;">
         <i data-lucide="timer" class="ctrl-opt" onclick="cancelAllPress(); triggerVibe(); toggleTimer()" size="30"></i>
         <button class="btn-circle btn-mini-play" onclick="cancelAllPress(); triggerVibe(); togglePlay()"><i data-lucide="play" id="btn-play-fs" size="30" style="color: inherit;"></i></button>
         <i data-lucide="share-2" class="ctrl-opt" onclick="cancelAllPress(); triggerVibe(); shareStation()" size="30"></i>
@@ -232,49 +233,48 @@
         PENSEZ À FAIRE UNE SAUVEGARDE DANS LES PARAMÈTRES DE TEMPS EN TEMPS POUR GARDER UNE COPIE DE VOS DONNÉES.
     </div>
 
+    <div class="acc">
+        <div class="acc-h" onclick="triggerVibe(); toggleAcc(this)">RADIO ➔ MP3 : GUIDE DE CONVERSION</div>
+        <div class="acc-b" style="padding:15px;">
+            <div class="acc-guide-container">
+                <div class="guide-step" onclick="triggerVibe(); lancerApp('com.shazam.android')">
+                    <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid #0088ff">1</div>
+                    <div class="guide-text-content">
+                        <b style="color:#0088ff">1. Identifier (Shazam)</b><br>
+                        - Lancez l'écoute<br>
+                        - <b>Copiez</b> le nom du titre.
+                    </div>
+                </div>
 
-<div class="acc">
-    <div class="acc-h" onclick="triggerVibe(); toggleAcc(this)">RADIO ➔ MP3 : GUIDE DE CONVERSION</div>
-    <div class="acc-b" style="padding:15px;">
-        <div class="acc-guide-container">
-            <div class="guide-step" onclick="triggerVibe(); lancerApp('com.shazam.android')">
-                <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid #0088ff">1</div>
-                <div class="guide-text-content">
-                    <b style="color:#0088ff">1. Identifier (Shazam)</b><br>
-                    - Lancez l'écoute<br>
-                    - <b>Copiez</b> le nom du titre.
+                <div class="guide-step" onclick="triggerVibe(); window.open('https://cafepia.fr', '_blank')">
+                    <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid #ff0000">2</div>
+                    <div class="guide-text-content">
+                        <b style="color:#ff0000">2. Rechercher & Télécharger</b><br>
+                        - Collez le titre dans la barre.<br>
+                        - Cliquez sur l'icône <b>Play</b> pour écouter.<br>
+                        - Cliquez sur <b>Download</b> pour le MP3.
+                    </div>
                 </div>
-            </div>
 
-            <div class="guide-step" onclick="triggerVibe(); window.open('https://cafepia.fr', '_blank')">
-                <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid #ff0000">2</div>
-                <div class="guide-text-content">
-                    <b style="color:#ff0000">2. Rechercher & Télécharger</b><br>
-                    - Collez le titre dans la barre.<br>
-                    - Cliquez sur l'icône <b>Play</b> pour écouter.<br>
-                    - Cliquez sur <b>Download</b> pour le MP3.
+                <div class="guide-step" onclick="triggerVibe(); lancerApp('tk2013.mp3_tag_convert')">
+                    <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid #4CAF50">3</div>
+                    <div class="guide-text-content">
+                        <b style="color:#4CAF50">3. Finaliser (TK Editor)</b><br>
+                        - Ouvrez le fichier téléchargé.<br>
+                        - Ajoutez la pochette et les tags.<br>
+                        - Enregistrez.
+                    </div>
+                </div>
+                
+                <div class="guide-step" onclick="triggerVibe(); lancerApp('mp3.html')">
+                    <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid yellow">4</div>
+                    <div class="guide-text-content">
+                        <b style="color:YELLOW">4. INTÉGRER (MP3 ELITE)</b><br>
+                        - DÉPLACEZ le fichier dans votre dossier "Musique".<br>
+                        - OUVREZ ensuite MP3 ELITE pour l'ajouter à votre bibliothèque.
+                    </div>
                 </div>
             </div>
-
-            <div class="guide-step" onclick="triggerVibe(); lancerApp('tk2013.mp3_tag_convert')">
-                <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid #4CAF50">3</div>
-                <div class="guide-text-content">
-                    <b style="color:#4CAF50">3. Finaliser (TK Editor)</b><br>
-                    - Ouvrez le fichier téléchargé.<br>
-                    - Ajoutez la pochette et les tags.<br>
-                    - Enregistrez.
-                </div>
-            </div>
-            
-            <div class="guide-step" onclick="triggerVibe(); lancerApp('mp3.html')">
-                <div class="guide-icon-circle" style="background:black; color:white; border: 2px solid yellow">4</div>
-                <div class="guide-text-content">
-                    <b style="color:YELLOW">4. INTÉGRER (MP3 ELITE)</b><br>
-                    - DÉPLACEZ le fichier dans votre dossier "Musique".<br>
-                    - OUVREZ ensuite MP3 ELITE pour l'ajouter à votre bibliothèque.
-                </div>
-            </div>
-            
         </div>
     </div>
 </div>
@@ -284,7 +284,6 @@
     let config = { bg: '#000000', accent: '#ffffff', viz: '#000000', vibrate: false };
     let audio = new Audio(), audioCtx, analyser, dataArray;
     let pressTimer, catPressTimer;
-    audio.crossOrigin = "anonymous";
 
     document.addEventListener('fullscreenchange', handleFSChange);
     document.addEventListener('webkitfullscreenchange', handleFSChange);
@@ -461,37 +460,51 @@
     }
 
     function playStation(station, element = null) {
-    currentStation = station;
-    audio.src = station.url;
+        currentStation = station;
 
-    if (!audioCtx) {
-        initAudio();
-    } else if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        // Tente la lecture sécurisée CORS
+        audio.removeAttribute('crossorigin');
+        audio.crossOrigin = "anonymous"; 
+        audio.src = station.url;
+
+        if (!audioCtx) {
+            initAudio();
+        } else if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        // Passage en plein écran automatique au clic
+        requestFullScreen();
+
+        audio.play().then(() => {
+            updateMediaSession();
+        }).catch(err => {
+            console.warn("Échec CORS/Auto-play. Mode audio pur sans visualiseur...", err);
+            
+            // Reconstitution sans CORS si le serveur radio bloque
+            audio.removeAttribute('crossorigin');
+            audio.load();
+            audio.play().then(() => {
+                updateMediaSession();
+            }).catch(e => console.error("Erreur de lecture :", e));
+        });
+        
+        isPlaying = true;
+        document.getElementById('mini-art').src = station.logo;
+        document.getElementById('fs-art').src = station.logo;
+        document.getElementById('mini-title').innerText = station.name;
+        document.getElementById('fs-title').innerText = station.name;
+        
+        updateIcons(); 
+        checkMarquees();
+        
+        if (element) {
+            setTimeout(() => {
+                const pos = element.getBoundingClientRect().top + window.pageYOffset - 15;
+                window.scrollTo({ top: pos, behavior: 'smooth' });
+            }, 100);
+        }
     }
-
-    audio.play().then(() => {
-        updateMediaSession();
-    }).catch(() => console.log("Auto-play bloqué ou flux invalide"));
-    
-    isPlaying = true;
-    document.getElementById('mini-art').src = station.logo;
-    document.getElementById('fs-art').src = station.logo;
-    document.getElementById('mini-title').innerText = station.name;
-    document.getElementById('fs-title').innerText = station.name;
-    
-    updateIcons(); 
-    checkMarquees();
-    
-    if (element) {
-        setTimeout(() => {
-            const pos = element.getBoundingClientRect().top + window.pageYOffset - 15;
-            window.scrollTo({ top: pos, behavior: 'smooth' });
-        }, 100);
-    }
-}
-
-
 
     function updateMediaSession() {
         if ('mediaSession' in navigator && currentStation) {
@@ -506,14 +519,13 @@
     }
 
     function togglePlay() { 
-    if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        if (isPlaying) { audio.pause(); } else { audio.play(); }
+        isPlaying = !isPlaying; 
+        updateIcons(); 
     }
-    if (isPlaying) { audio.pause(); } else { audio.play(); }
-    isPlaying = !isPlaying; 
-    updateIcons(); 
-}
-
 
     function updateIcons() {
         const icon = isPlaying ? 'pause' : 'play';
@@ -755,46 +767,37 @@
         reader.readAsText(input.files[0]);
     }
 
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser(); 
+        analyser.fftSize = 512;
 
+        const bassFilter = audioCtx.createBiquadFilter();
+        bassFilter.type = "lowshelf";
+        bassFilter.frequency.value = 250;
+        bassFilter.gain.value = 3.0;
 
-function initAudio() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser(); 
-    analyser.fftSize = 512;
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = 1.2;
 
-    const bassFilter = audioCtx.createBiquadFilter();
-    bassFilter.type = "lowshelf";
-    bassFilter.frequency.value = 250;
-    bassFilter.gain.value = 3.0;
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -8.0;
+        compressor.knee.value = 15;
+        compressor.ratio.value = 5;
+        compressor.attack.value = 0.005;
+        compressor.release.value = 0.20;
 
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = 1.2;
+        const source = audioCtx.createMediaElementSource(audio);
+        
+        source.connect(bassFilter);
+        bassFilter.connect(gainNode);
+        gainNode.connect(analyser);
+        analyser.connect(compressor);
+        compressor.connect(audioCtx.destination);
 
-    const compressor = audioCtx.createDynamicsCompressor();
-    compressor.threshold.value = -8.0;
-    compressor.knee.value = 15;
-    compressor.ratio.value = 5;
-    compressor.attack.value = 0.005;
-    compressor.release.value = 0.20;
-
-    const source = audioCtx.createMediaElementSource(audio);
-    
-    source.connect(bassFilter);
-    bassFilter.connect(gainNode);
-    gainNode.connect(analyser);
-    analyser.connect(compressor);
-    compressor.connect(audioCtx.destination);
-
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-    draw();
-}
-
-
-
-
-
-
-
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        draw();
+    }
 
     function draw() {
         requestAnimationFrame(draw); if (!analyser) return;
