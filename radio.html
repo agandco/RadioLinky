@@ -760,27 +760,23 @@ function initAudio() {
     analyser = audioCtx.createAnalyser(); 
     analyser.fftSize = 512;
 
-    // 1. Égaliseur de basses (+5 dB sous 150 Hz)
     const bassFilter = audioCtx.createBiquadFilter();
     bassFilter.type = "lowshelf";
-    bassFilter.frequency.value = 150;
-    bassFilter.gain.value = 5.0;
+    bassFilter.frequency.value = 200;
+    bassFilter.gain.value = 4.0;
 
-    // 2. Nœud de gain principal
     const gainNode = audioCtx.createGain();
-    gainNode.gain.value = 2.5;
+    gainNode.gain.value = 3.0;
 
-    // 3. Compresseur / Limiteur anti-grésillement
     const compressor = audioCtx.createDynamicsCompressor();
-    compressor.threshold.value = -3.0;
-    compressor.knee.value = 10;
-    compressor.ratio.value = 20;
-    compressor.attack.value = 0.001;
-    compressor.release.value = 0.1;
+    compressor.threshold.value = -6.0;
+    compressor.knee.value = 12;
+    compressor.ratio.value = 12;
+    compressor.attack.value = 0.002;
+    compressor.release.value = 0.15;
 
     const source = audioCtx.createMediaElementSource(audio);
     
-    // Chaînage : Source -> Basses -> Gain -> Analyseur -> Compresseur -> HP
     source.connect(bassFilter);
     bassFilter.connect(gainNode);
     gainNode.connect(analyser);
@@ -790,6 +786,7 @@ function initAudio() {
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     draw();
 }
+
 
 
 
