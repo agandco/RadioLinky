@@ -353,29 +353,29 @@
         }
     }
 
+
+
+
     function initAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioCtx.createAnalyser(); 
         analyser.fftSize = 512;
 
-        // 1. Boost des basses/médiums-basses (adapté HP + écouteurs)
         const bassFilter = audioCtx.createBiquadFilter();
         bassFilter.type = "lowshelf";
-        bassFilter.frequency.value = 250; // Passé de 200 à 250 Hz
-        bassFilter.gain.value = 4.0;      // +4 dB
+        bassFilter.frequency.value = 250;
+        bassFilter.gain.value = 3.0;
 
-        // 2. Gain général remonté pour le volume HP
         gainNode = audioCtx.createGain();
-        gainNode.gain.value = 3.0;
+        gainNode.gain.value = 1.2;
 
-        // 3. Compresseur réglé pour préserver la dynamique
         const compressor = audioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -12.0; // Seuil ajusté pour moins écraser
-        compressor.knee.value = 20;         // Transition plus douce
-        compressor.ratio.value = 4;          // Compression modérée (au lieu de 12)
-        compressor.attack.value = 0.01;      // Attaque plus naturelle
-        compressor.release.value = 0.25;     // Relâchement fluide
+        compressor.threshold.value = -8.0;
+        compressor.knee.value = 15;
+        compressor.ratio.value = 5;
+        compressor.attack.value = 0.005;
+        compressor.release.value = 0.20;
 
         const source = audioCtx.createMediaElementSource(audio);
 
@@ -397,6 +397,7 @@
         draw();
     }
 }
+
 
 
 
