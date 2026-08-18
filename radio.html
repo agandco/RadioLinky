@@ -762,18 +762,18 @@ function initAudio() {
 
     const bassFilter = audioCtx.createBiquadFilter();
     bassFilter.type = "lowshelf";
-    bassFilter.frequency.value = 200;
+    bassFilter.frequency.value = 250; // Passé de 200 à 250 Hz
     bassFilter.gain.value = 4.0;
 
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = 3.0;
 
     const compressor = audioCtx.createDynamicsCompressor();
-    compressor.threshold.value = -6.0;
-    compressor.knee.value = 12;
-    compressor.ratio.value = 12;
-    compressor.attack.value = 0.002;
-    compressor.release.value = 0.15;
+    compressor.threshold.value = -12.0; // Seuil plus haut pour moins écraser
+    compressor.knee.value = 20;         // Transition plus douce
+    compressor.ratio.value = 4;          // Compression modérée (au lieu de 12)
+    compressor.attack.value = 0.01;      // Attaque plus naturelle pour garder le tranchant
+    compressor.release.value = 0.25;     // Relâchement fluide
 
     const source = audioCtx.createMediaElementSource(audio);
     
@@ -786,6 +786,7 @@ function initAudio() {
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     draw();
 }
+
 
 
 

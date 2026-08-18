@@ -362,20 +362,20 @@
         // 1. Boost des basses/médiums-basses (adapté HP + écouteurs)
         const bassFilter = audioCtx.createBiquadFilter();
         bassFilter.type = "lowshelf";
-        bassFilter.frequency.value = 200; // Monte à 200 Hz pour impacter aussi les HP
-        bassFilter.gain.value = 4.0;      // +4 dB (plus équilibré)
+        bassFilter.frequency.value = 250; // Passé de 200 à 250 Hz
+        bassFilter.gain.value = 4.0;      // +4 dB
 
         // 2. Gain général remonté pour le volume HP
         gainNode = audioCtx.createGain();
         gainNode.gain.value = 3.0;
 
-        // 3. Limiteur réglé pour laisser passer du volume
+        // 3. Compresseur réglé pour préserver la dynamique
         const compressor = audioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -6.0; // Laisse remonter le volume global
-        compressor.knee.value = 12;
-        compressor.ratio.value = 12;      // Compression un peu moins brutale
-        compressor.attack.value = 0.002;
-        compressor.release.value = 0.15;
+        compressor.threshold.value = -12.0; // Seuil ajusté pour moins écraser
+        compressor.knee.value = 20;         // Transition plus douce
+        compressor.ratio.value = 4;          // Compression modérée (au lieu de 12)
+        compressor.attack.value = 0.01;      // Attaque plus naturelle
+        compressor.release.value = 0.25;     // Relâchement fluide
 
         const source = audioCtx.createMediaElementSource(audio);
 
@@ -397,6 +397,7 @@
         draw();
     }
 }
+
 
 
 
